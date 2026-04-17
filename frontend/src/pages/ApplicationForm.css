@@ -1,0 +1,326 @@
+/* ── Application Form ──────────────────────────────────────────────── */
+.app-form-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+.app-form-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-light, var(--color-border));
+  width: 100%;
+}
+
+.app-form-header-content {
+  padding: 24px 24px 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.app-form-header-content h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.app-form-header-content p {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.app-form-body {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Section cards — consistent surface color */
+.app-form-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.app-form-section-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #000000;
+  margin-bottom: 6px;
+}
+
+[data-theme="dark"] .app-form-section-title {
+  color: #ffffff;
+}
+
+.app-form-section-desc {
+  font-size: 0.8125rem;
+  color: #374151; /* Dark grey, almost black */
+  margin-top: -6px;
+  line-height: 1.4;
+}
+
+[data-theme="dark"] .app-form-section-desc {
+  color: #d1d5db;
+}
+
+/* ── Form inputs — consistent colors, same bg as the surface ───── */
+.app-form-section .form-input,
+.app-form-section .form-select,
+.app-form-section .form-textarea {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text-primary);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.app-form-section .form-input:focus,
+.app-form-section .form-select:focus,
+.app-form-section .form-textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.app-form-section .form-input::placeholder,
+.app-form-section .form-textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Dynamic touched required validation styling */
+.app-form-section .form-input[data-touched="true"]:invalid,
+.app-form-section .form-select[data-touched="true"]:invalid,
+.app-form-section .form-textarea[data-touched="true"]:invalid {
+  border-color: var(--color-error);
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.app-form-section .form-select option {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.app-form-section .form-label {
+  color: #000000;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: normal;
+  margin-bottom: 6px;
+  display: block;
+}
+
+[data-theme="dark"] .app-form-section .form-label {
+  color: #ffffff;
+}
+
+/* ── Grid rows — prevent overflow ─────────────────────────────── */
+.app-form-section .form-row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.app-form-section .form-row-3 {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 640px) {
+  .app-form-section .form-row,
+  .app-form-section .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Form group — force children to shrink ─────────────────────── */
+.app-form-section .form-group {
+  min-width: 0;
+}
+
+/* ── Upload areas ─────────────────────────────────────────────── */
+.upload-row {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.upload-photo-area {
+  width: 120px;
+  height: 140px;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+  flex-shrink: 0;
+  background: transparent;
+}
+
+.upload-photo-area:hover {
+  border-color: var(--color-primary);
+}
+
+.upload-photo-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.upload-cv-area {
+  flex: 1;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  padding: 20px;
+  transition: border-color var(--transition-fast);
+  background: transparent;
+}
+
+.upload-cv-area:hover {
+  border-color: var(--color-primary);
+}
+
+.upload-cv-area small {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Section header with button ───────────────────────────────── */
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Repeater cards — subtle bg distinction ── */
+.repeater-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Inside repeater cards, inputs should remain surface (white) color for contrast */
+.repeater-card .form-input,
+.repeater-card .form-select,
+.repeater-card .form-textarea {
+  background: var(--color-surface);
+}
+
+.repeater-remove {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--color-error);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background var(--transition-fast);
+}
+
+.repeater-remove:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* ── Consent ──────────────────────────────────────────────────── */
+.consent-text {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.consent-text strong {
+  color: var(--color-primary);
+}
+
+/* ── Submit button ────────────────────────────────────────────── */
+.submit-btn {
+  margin-top: 8px;
+  padding: 16px;
+  font-size: 1rem;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  border-radius: var(--radius-md);
+}
+
+.submit-btn:hover {
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
+}
+
+/* ── Add/outline buttons in form sections ─────────────────────── */
+.app-form-section .btn-outline {
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.app-form-section .btn-outline:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .app-form-section {
+    padding: 20px 16px;
+  }
+
+  .app-form-header-content {
+    padding: 20px 16px;
+    align-items: flex-start !important;
+  }
+  
+  .app-form-body {
+    padding: 24px 16px 60px;
+  }
+
+  .repeater-card {
+    padding: 16px;
+  }
+
+  .upload-row {
+    flex-direction: column;
+  }
+
+  .upload-photo-area {
+    width: 100%;
+    height: 160px;
+  }
+}
