@@ -76,7 +76,6 @@ Interview Portal/
 3. Start the development server: `npm run dev`
 
 ## 🔐 Credentials (Demo)
-- **Admin**: `Admin@eulogik.com` / `Eulogik#123`
 - **Frontend URL**: `http://localhost:5173`
 - **Backend API**: `http://localhost:8000/docs`
 
