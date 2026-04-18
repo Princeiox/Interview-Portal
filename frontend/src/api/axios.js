@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL || "https://interview-portal-95w0.onrender.com";
 
 const api = axios.create({
     baseURL: `${API}/api/v1`,
