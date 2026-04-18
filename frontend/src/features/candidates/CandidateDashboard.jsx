@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import api from '../api/axios';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
+import api from '@/api/axios';
 import { ArrowLeft, Search, Filter, LayoutGrid, ChevronRight, LogOut, Mail, Phone, Calendar, Download, Share } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
+import ThemeToggle from '@/components/ThemeToggle';
 import './CandidateDashboard.css';
 
 const STATUS_OPTIONS = ['All Status', 'Applied', 'Screening', 'Interview', 'Offered', 'Hired', 'Rejected'];

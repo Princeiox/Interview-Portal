@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import api from '../api/axios';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
+import api from '@/api/axios';
 import { ArrowLeft, LogOut, Search, ChevronRight, Users, ClipboardCheck, Clock, UserPlus, Trash2, X, Eye, EyeOff } from 'lucide-react';
 import './InterviewDashboard.css';
-import './CandidateDashboard.css';
-import ThemeToggle from '../components/ThemeToggle';
-import ConfirmModal from '../components/ConfirmModal';
+import '../candidates/CandidateDashboard.css';
+import ThemeToggle from '@/components/ThemeToggle';
+import ConfirmModal from '@/components/ConfirmModal';
 
 const STATUS_OPTIONS = ['All Status', 'Interview', 'Screening', 'Applied', 'Hired', 'Rejected'];
 

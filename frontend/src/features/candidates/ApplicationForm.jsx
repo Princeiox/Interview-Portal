@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useToast } from '../context/ToastContext';
-import api, { API_BASE } from '../api/axios';
+import { useToast } from '@/context/ToastContext';
+import api, { API_BASE } from '@/api/axios';
 import { Upload, User, Plus, Trash2, ArrowLeft, CheckCircle, X } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
+import ThemeToggle from '@/components/ThemeToggle';
 import './ApplicationForm.css';
 
 const INDIAN_STATES = [

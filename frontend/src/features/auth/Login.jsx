@@ -1,69 +1,72 @@
+/**
+ * Login Page
+ * Allows employees (HR/Interviewer) to sign in using their registered credentials.
+ */
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { UserPlus, ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
+import { LogIn, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import ThemeToggle from '@/components/ThemeToggle';
 import './Auth.css';
 
-export default function Signup() {
+export default function Login() {
   const navigate = useNavigate();
-  const { signup } = useAuth();
-  const toast = useToast();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'HR' });
+  const { login } = useAuth(); // Hook to access our global auth state
+  const toast = useToast();   // Hook for showing popup notifications
+
+  // State to hold form data and UI status
+  const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  /**
+   * Handles the login form submission
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
     try {
-      await signup(form);
-      toast.success('Account created! Please sign in.');
-      navigate('/login');
+      // Attempt to login using the credentials provided
+      await login(form.email, form.password);
+      toast.success('Glad to have you back!');
+      navigate('/'); // Take the user to the home page on success
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Signup failed');
+      // If something goes wrong, tell the user why (common: wrong password)
+      toast.error(err.response?.data?.detail || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-page" style={{ position: 'relative' }}>
+    <div className="auth-page">
+      {/* Light/Dark mode switcher */}
       <div style={{ position: 'absolute', top: 24, right: 24 }}>
         <ThemeToggle />
       </div>
+
       <div className="auth-container animate-scale-in">
+        {/* Simple back button to return to public view */}
         <button className="auth-back" onClick={() => navigate('/')}>
-          <ArrowLeft size={18} /> Back
+          <ArrowLeft size={18} /> Back to Home
         </button>
 
         <div className="auth-header">
           <div className="auth-icon-wrap">
-            <UserPlus size={24} />
+            <LogIn size={24} />
           </div>
-          <h1>Create Account</h1>
-          <p>Register as an HR or Interviewer</p>
+          <h1>Welcome Back</h1>
+          <p>Please sign in to access the Interview Portal</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label className="form-label">Full Name</label>
-            <input
-              id="signup-name"
-              type="text"
-              className="form-input"
-              placeholder="John Doe"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              required
-            />
-          </div>
-
+          {/* Email Field */}
           <div className="form-group">
             <label className="form-label">Email</label>
             <input
-              id="signup-email"
+              id="login-email"
               type="email"
               className="form-input"
               placeholder="you@company.com"
@@ -73,18 +76,18 @@ export default function Signup() {
             />
           </div>
 
+          {/* Password Field with Hide/Show toggle */}
           <div className="form-group">
             <label className="form-label">Password</label>
             <div className="password-input-wrapper">
               <input
-                id="signup-password"
+                id="login-password"
                 type={showPassword ? 'text' : 'password'}
                 className="form-input"
                 placeholder="••••••••"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 required
-                minLength={6}
               />
               <button
                 type="button"
@@ -97,32 +100,20 @@ export default function Signup() {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Role</label>
-            <select
-              id="signup-role"
-              className="form-select"
-              value={form.role}
-              onChange={(e) => setForm({ ...form, role: e.target.value })}
-            >
-              <option value="HR">HR Manager</option>
-              <option value="INTERVIEWER">Interviewer</option>
-            </select>
-          </div>
-
+          {/* Submit Button */}
           <button
-            id="signup-submit"
+            id="login-submit"
             type="submit"
             className="btn btn-primary btn-block btn-lg"
             disabled={loading}
           >
-            {loading ? <span className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} /> : 'Create Account'}
+            {loading ? (
+              <span className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} />
+            ) : (
+              'Sign In'
+            )}
           </button>
         </form>
-
-        <p className="auth-footer">
-          Already have an account? <Link to="/login">Sign in</Link>
-        </p>
       </div>
     </div>
   );

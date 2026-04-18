@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api, { API_BASE } from '../api/axios';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
+import api, { API_BASE } from '@/api/axios';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 import {
   ArrowLeft, Mail, Phone, MapPin, Briefcase, FileText,
   Plus, Pencil, X, Star, User, GraduationCap, Users, Trash2
 } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
-import ConfirmModal from '../components/ConfirmModal';
+import ThemeToggle from '@/components/ThemeToggle';
+import ConfirmModal from '@/components/ConfirmModal';
 import './CandidateDetail.css';
 
 /**

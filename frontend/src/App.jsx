@@ -3,12 +3,12 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import LogoutModal from './components/LogoutModal';
 
-import Home from './pages/Home';
-import Login from './pages/Login';
-import ApplicationForm from './pages/ApplicationForm';
-import CandidateDashboard from './pages/CandidateDashboard';
-import CandidateDetail from './pages/CandidateDetail';
-import InterviewDashboard from './pages/InterviewDashboard';
+import Home from '@/features/home/Home';
+import Login from '@/features/auth/Login';
+import ApplicationForm from '@/features/candidates/ApplicationForm';
+import CandidateDashboard from '@/features/candidates/CandidateDashboard';
+import CandidateDetail from '@/features/candidates/CandidateDetail';
+import InterviewDashboard from '@/features/interviews/InterviewDashboard';
 
 function ProtectedRoute({ children, roles }) {
   const { isAuthenticated, user } = useAuth();

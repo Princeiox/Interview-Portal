@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Users, ClipboardCheck } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import ThemeToggle from '../components/ThemeToggle';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
+import ThemeToggle from '@/components/ThemeToggle';
 import './Home.css';
 
 export default function Home() {
