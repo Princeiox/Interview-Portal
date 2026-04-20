@@ -220,11 +220,15 @@
   
   .dashboard-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 16px;
   }
-  
-  .dashboard-header .btn {
+
+  .dashboard-header > div:last-child {
+    display: flex;
+    justify-content: flex-end;
     width: 100%;
+    flex-wrap: wrap;
   }
+
 }

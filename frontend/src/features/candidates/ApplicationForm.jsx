@@ -431,8 +431,14 @@ export default function ApplicationForm() {
                 {phoneError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{phoneError}</p>}
               </div>
               <div className="form-group">
-                <label className="form-label">Date of Birth</label>
-                <input className="form-input" type="date" value={form.date_of_birth} onChange={(e) => updateForm('date_of_birth', e.target.value)} />
+                <label className="form-label">Date of Birth <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 400 }}>(DD-MM-YYYY)</span></label>
+                <input 
+                  className="form-input" 
+                  type="date" 
+                  value={form.date_of_birth} 
+                  onChange={(e) => updateForm('date_of_birth', e.target.value)} 
+                  style={{ color: form.date_of_birth === '' ? 'var(--color-text-muted)' : 'var(--color-text-primary)' }}
+                />
                 {ageWarning && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{ageWarning}</p>}
               </div>
             </div>
@@ -700,12 +706,26 @@ export default function ApplicationForm() {
                   </div>
                   <div className="form-row">
                     <div className="form-group">
-                      <label className="form-label">From <span style={{ color: 'var(--color-error)' }}>*</span></label>
-                      <input className="form-input" type="date" value={work.from_date} onChange={(e) => updateItem(setWorkExperience, index, 'from_date', e.target.value)} required />
+                      <label className="form-label">From <span style={{ color: 'var(--color-error)' }}>*</span> <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 400 }}>(DD-MM-YYYY)</span></label>
+                      <input 
+                        className="form-input" 
+                        type="date" 
+                        value={work.from_date} 
+                        onChange={(e) => updateItem(setWorkExperience, index, 'from_date', e.target.value)} 
+                        required 
+                        style={{ color: work.from_date === '' ? 'var(--color-text-muted)' : 'var(--color-text-primary)' }}
+                      />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">To <span style={{ color: 'var(--color-error)' }}>*</span></label>
-                      <input className="form-input" type="date" value={work.to_date} onChange={(e) => updateItem(setWorkExperience, index, 'to_date', e.target.value)} required />
+                      <label className="form-label">To <span style={{ color: 'var(--color-error)' }}>*</span> <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 400 }}>(DD-MM-YYYY)</span></label>
+                      <input 
+                        className="form-input" 
+                        type="date" 
+                        value={work.to_date} 
+                        onChange={(e) => updateItem(setWorkExperience, index, 'to_date', e.target.value)} 
+                        required 
+                        style={{ color: work.to_date === '' ? 'var(--color-text-muted)' : 'var(--color-text-primary)' }}
+                      />
                     </div>
                   </div>
                   <div className="form-group">
