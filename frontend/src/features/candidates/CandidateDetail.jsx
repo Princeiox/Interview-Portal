@@ -138,6 +138,7 @@ export default function CandidateDetail() {
           </div>
           <p className="detail-position">{candidate.position_applied}</p>
         </div>
+        <ThemeToggle />
       </header>
 
       <div className="detail-actions">

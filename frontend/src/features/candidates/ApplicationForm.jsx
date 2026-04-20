@@ -307,6 +307,7 @@ export default function ApplicationForm() {
               <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>{isEditMode ? (form.full_name || 'Candidate') : 'Eulogik'}</p>
             </div>
           </div>
+          <ThemeToggle />
         </div>
       </header>
 

@@ -2,7 +2,6 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import LogoutModal from './components/LogoutModal';
-import Navbar from './components/Navbar';
 
 import Home from '@/features/home/Home';
 import Login from '@/features/auth/Login';
@@ -21,7 +20,6 @@ function ProtectedRoute({ children, roles }) {
 function App() {
   return (
     <>
-      <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
