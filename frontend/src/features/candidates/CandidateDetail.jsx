@@ -109,7 +109,7 @@ export default function CandidateDetail() {
       const name = candidate.full_name;
       await api.delete(`/candidates/${id}`);
       toast.warning(`${name} has been deleted successfully.`);
-      navigate(dashboardPath);
+      navigate(dashboardPath, { replace: true });
     } catch (err) {
       toast.error('Error deleting candidate');
     }

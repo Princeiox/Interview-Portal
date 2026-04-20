@@ -31,7 +31,7 @@ export default function Login() {
       // Attempt to login using the credentials provided
       await login(form.email, form.password);
       toast.success('Glad to have you back!');
-      navigate('/'); // Take the user to the home page on success
+      navigate('/', { replace: true }); // Take the user to the home page on success, replacing login in stack
     } catch (err) {
       // If something goes wrong, tell the user why (common: wrong password)
       toast.error(err.response?.data?.detail || 'Login failed. Please check your credentials.');

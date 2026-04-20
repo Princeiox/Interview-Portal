@@ -193,7 +193,7 @@ export default function InterviewDashboard() {
     <div className="dashboard-page">
       <header className="dashboard-header">
         <div className="dashboard-header-left">
-          <button className="icon-btn" onClick={() => navigate(-1)}><ArrowLeft size={20} /></button>
+          <button className="icon-btn" onClick={() => navigate('/')}><ArrowLeft size={20} /></button>
           <div>
             <h1 className="dashboard-title">{isAdmin ? 'Create Interviewer' : 'Interview Dashboard'}</h1>
             <p className="dashboard-count">{isAdmin ? 'Create interviewer and assess candidates' : 'Assess candidates during interviews'}</p>
