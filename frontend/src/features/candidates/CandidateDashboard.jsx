@@ -154,10 +154,10 @@ export default function CandidateDashboard() {
             <button className="btn btn-primary btn-sm" onClick={exportToCSV}>
               <Download size={14} /> Export CSV
             </button>
+          <ThemeToggle />
           <button className="btn btn-outline btn-sm" onClick={handleLogout}>
             <LogOut size={16} /> Logout
           </button>
-          <ThemeToggle />
         </div>
       </header>
 

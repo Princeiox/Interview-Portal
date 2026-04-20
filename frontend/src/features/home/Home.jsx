@@ -52,12 +52,12 @@ export default function Home() {
             <p className="home-subtitle">Streamlined candidate management</p>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <ThemeToggle />
             {isAuthenticated ? (
               <button className="btn btn-outline" onClick={handleLogout}>Logout</button>
             ) : (
               <button className="btn btn-primary" onClick={() => navigate('/login')}>Login</button>
             )}
-            <ThemeToggle />
           </div>
         </div>
       </header>
