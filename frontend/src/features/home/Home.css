@@ -23,6 +23,14 @@
   flex-direction: column;
 }
 
+.home-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
 .home-subtitle-inline {
   font-size: 0.9375rem;
   color: var(--color-text-muted);
@@ -105,17 +113,15 @@
   }
 
   .home-title {
-    font-size: 1.1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 1.125rem;
+    font-weight: 800;
+    white-space: normal; /* Allow wrap for title on mobile if needed */
+    line-height: 1.2;
+    color: var(--color-text-primary);
   }
 
   .home-subtitle-inline {
-    font-size: 0.75rem;
-    white-space: nowrap;
-    color: var(--color-text-muted);
-    opacity: 0.8;
+    display: none; /* Hide subtitle on very small mobile to prioritize title visibility */
   }
 
   .home-header-actions .btn-text {
