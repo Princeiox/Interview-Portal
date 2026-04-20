@@ -8,13 +8,10 @@
 
 .dashboard-header {
   padding: 32px 0 24px;
-}
-
-.dashboard-header-main {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  gap: 16px;
 }
 
 .dashboard-header-left {
@@ -26,16 +23,8 @@
 .dashboard-header-right {
   display: flex;
   align-items: center;
-  gap: 24px;
-}
-
-.dashboard-actions-primary,
-.dashboard-actions-secondary {
-  display: flex;
-  align-items: center;
   gap: 12px;
 }
-
 
 
 .icon-btn {
@@ -228,67 +217,86 @@
 
 @media (max-width: 640px) {
   .dashboard-header {
-    padding: 20px 0;
-  }
-
-  .dashboard-header-main {
     display: grid;
     grid-template-columns: 1fr auto;
-    grid-template-areas: 
-      "left primary"
-      "secondary secondary";
+    padding: 20px 0;
     gap: 16px;
     align-items: center;
   }
 
   .dashboard-header-left {
-    grid-area: left;
+    grid-column: 1;
+    grid-row: 1;
     min-width: 0;
   }
 
   .dashboard-header-right {
-    display: contents;
+    display: contents; /* Flattens children into the parent grid */
   }
 
-  .dashboard-actions-primary {
-    grid-area: primary;
+  /* Target ThemeToggle (component usually has a container) and Logout button */
+  .dashboard-header-right > *:nth-child(3),
+  .dashboard-header-right > .logout-btn {
+    grid-row: 1;
+    grid-column: 2;
     justify-self: end;
-    gap: 8px;
   }
 
-  .dashboard-actions-secondary {
-    grid-area: secondary;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
+  /* Move toggle slightly left if both are on top, but maybe they should stack? 
+     Let's group them for mobile top-row. */
+  .dashboard-header-right {
+     display: flex;
+     flex-direction: column;
+     gap: 12px;
+     grid-column: 1 / span 2;
   }
 
-  .dashboard-header-actions-primary .logout-btn {
-    padding: 6px 10px;
+  /* Wait, the user wants Toggle/Logout UP. 
+     Restructured CSS specifically for mobile: */
+  .dashboard-header {
+     display: flex;
+     flex-direction: column;
+     gap: 16px;
   }
 
-  .btn-text {
-    display: none;
+  .dashboard-header-left {
+     display: flex;
+     justify-content: space-between;
+     width: 100%;
+     align-items: center;
   }
+
+  /* We need Theme/Logout to APPEAR in the left header row. 
+     I'll use absolute positioning for the 'Primary' items on mobile to save space. */
+     
+  .dashboard-header-right {
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     gap: 8px;
+     width: 100%;
+  }
+
+  .share-btn { order: 1; }
+  .export-btn { order: 2; }
+  
+  /* Theme and Logout should be at the top. I'll use absolute on mobile. */
+  .dashboard-header-right > *:nth-child(3),
+  .logout-btn {
+     position: absolute;
+     top: 24px;
+     right: 16px;
+  }
+  
+  .logout-btn { right: 16px; }
+  .dashboard-header-right > *:nth-child(3) { right: 60px; }
+
+  .btn-text { display: none; }
   
   .dashboard-title {
     font-size: 1.125rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 160px;
+    max-width: 180px;
   }
-  
-  .dashboard-count {
-    display: none;
-  }
-
-  .dashboard-actions-secondary .btn {
-    width: 100%;
-    font-size: 0.8125rem;
-    padding: 10px;
-  }
+  .dashboard-count { display: none; }
 
 
   /* Filters layout: Search (full) and Selects (half) */
