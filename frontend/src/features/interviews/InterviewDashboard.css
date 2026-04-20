@@ -295,42 +295,35 @@
 
 @media (max-width: 640px) {
   .dashboard-header {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    justify-content: space-between !important;
+    align-items: center;
     padding: 20px 16px;
-    gap: 16px;
-    flex-direction: column;
-    align-items: stretch;
+    gap: 0;
   }
 
   .dashboard-header-main {
-    flex-wrap: nowrap;
+    display: contents; /* Allows children to participate in the flex-between of the header */
   }
 
   .dashboard-header-left {
+    flex: 1;
     min-width: 0;
   }
 
-  .dashboard-title {
-    font-size: 1.125rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .dashboard-count {
-    display: none;
-  }
-
   .dashboard-header-actions-primary {
+    display: flex;
+    align-items: center;
     gap: 8px;
+    justify-content: flex-end;
   }
 
-  .dashboard-header-actions-primary .logout-btn {
-    padding: 6px 10px;
-  }
-
-  .dashboard-header-actions-primary .btn-text {
+  .logout-btn .btn-text {
     display: none;
   }
+
 
   .dashboard-filters {
     display: grid;

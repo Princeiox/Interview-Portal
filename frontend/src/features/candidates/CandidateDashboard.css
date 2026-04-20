@@ -224,9 +224,11 @@
 
 @media (max-width: 640px) {
   .dashboard-header {
-    display: flex;
+    display: flex !important;
+    flex-direction: row !important;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: space-between !important;
+    align-items: center;
     padding: 20px 16px;
     gap: 0;
   }

@@ -205,10 +205,28 @@
 }
 
 @media (max-width: 640px) {
+  .detail-header {
+    padding: 20px 16px;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 12px;
+  }
+
+  .detail-header-info {
+    min-width: 0;
+  }
+
+  .detail-name-row h1 {
+    font-size: 1.125rem;
+  }
+
   .detail-grid-2, .info-grid, .assessment-attributes-grid, .decision-grid {
     grid-template-columns: 1fr !important;
   }
 }
+
 
 /* Assessment List Styles */
 .assessment-result-card {
