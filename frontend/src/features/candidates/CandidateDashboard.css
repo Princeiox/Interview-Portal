@@ -208,27 +208,71 @@
 }
 
 @media (max-width: 640px) {
-  .dashboard-filters {
+  .dashboard-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 20px;
+    padding-bottom: 24px;
+  }
+
+  .dashboard-header-left {
+    justify-content: flex-start;
+  }
+
+  .dashboard-header > div:last-child {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+  }
+
+  /* Filters layout: Search (full) and Selects (half) */
+  .dashboard-filters {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .search-box {
+    grid-column: span 2;
+    width: 100%;
+  }
+
+  .filter-group {
+    grid-column: span 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--color-surface);
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    min-width: 0;
+  }
+
+  .filter-group svg {
+    display: none; /* Hide icons on small mobile to save space if needed */
+  }
+
+  .filter-select {
+    width: 100%;
+    border: none;
+    padding: 4px 0;
+    font-size: 0.8125rem;
   }
 
   .candidate-meta {
     flex-direction: column;
     gap: 6px;
   }
-  
-  .dashboard-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
+
+  .candidate-card {
+    padding: 16px;
   }
 
-  .dashboard-header > div:last-child {
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
-    flex-wrap: wrap;
+  .candidate-name {
+    font-size: 1rem;
   }
-
 }
+
+
