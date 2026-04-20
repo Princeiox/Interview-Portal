@@ -85,16 +85,17 @@
   }
   
   .home-header-content {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
   }
 
   .home-header-content > div:last-child {
-    display: flex;
     justify-content: flex-end;
-    width: 100%;
+    width: auto;
   }
+
 
 
   .home-title {
