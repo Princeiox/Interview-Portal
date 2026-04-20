@@ -140,29 +140,30 @@ export default function CandidateDashboard() {
   return (
     <div className="dashboard-page">
       <header className="dashboard-header">
-        <div className="dashboard-header-main">
-          <div className="dashboard-header-left">
-            <button className="icon-btn" onClick={() => navigate('/')}><ArrowLeft size={20} /></button>
-            <div>
-              <h1 className="dashboard-title">Candidate Dashboard</h1>
-              <p className="dashboard-count">{filtered.length} candidates</p>
-            </div>
+        <div className="dashboard-header-left">
+          <button className="icon-btn" onClick={() => navigate('/')}><ArrowLeft size={20} /></button>
+          <div>
+            <h1 className="dashboard-title">Candidate Dashboard</h1>
+            <p className="dashboard-count">{filtered.length} candidates</p>
           </div>
-          <div className="dashboard-header-actions-primary">
+        </div>
+        
+        <div className="dashboard-header-actions">
+          <div className="actions-secondary">
+            <button className="btn btn-outline btn-sm action-btn" onClick={handleShareLink}>
+              <Share size={14} /> <span className="btn-text">Share Link</span>
+            </button>
+            <button className="btn btn-primary btn-sm action-btn" onClick={exportToCSV}>
+              <Download size={14} /> <span className="btn-text">Export CSV</span>
+            </button>
+          </div>
+          
+          <div className="actions-primary">
             <ThemeToggle />
             <button className="btn btn-outline btn-sm logout-btn" onClick={handleLogout}>
               <LogOut size={16} /> <span className="btn-text">Logout</span>
             </button>
           </div>
-        </div>
-        
-        <div className="dashboard-header-actions-secondary">
-          <button className="btn btn-outline btn-sm" onClick={handleShareLink}>
-            <Share size={14} /> Share Link
-          </button>
-          <button className="btn btn-primary btn-sm" onClick={exportToCSV}>
-            <Download size={14} /> Export CSV
-          </button>
         </div>
       </header>
 

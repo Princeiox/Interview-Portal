@@ -9,17 +9,9 @@
 .dashboard-header {
   padding: 32px 0 24px;
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-}
-
-.dashboard-header-main {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
 }
 
 .dashboard-header-left {
@@ -28,18 +20,18 @@
   gap: 16px;
 }
 
-.dashboard-header-actions-primary {
+.dashboard-header-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.dashboard-header-actions-secondary {
+.actions-primary, .actions-secondary {
   display: flex;
   align-items: center;
   gap: 12px;
-  justify-content: flex-end;
 }
+
 
 
 .icon-btn {
@@ -232,18 +224,38 @@
 
 @media (max-width: 640px) {
   .dashboard-header {
-    padding: 20px 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
     gap: 16px;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .dashboard-header-main {
-    flex-wrap: nowrap;
+    padding: 20px 16px;
+    align-items: center;
   }
 
   .dashboard-header-left {
+    grid-column: 1;
+    grid-row: 1;
     min-width: 0;
+  }
+
+  .dashboard-header-actions {
+    display: contents; /* Allows children to be grid items of .dashboard-header */
+  }
+
+  .actions-primary {
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .actions-secondary {
+    grid-column: 1 / span 2;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
   }
 
   .dashboard-title {
@@ -254,33 +266,23 @@
   }
   
   .dashboard-count {
-    display: none; /* Hide count on small mobile top row to save space */
+    display: none;
   }
 
-  .dashboard-header-actions-primary {
-    gap: 8px;
-  }
-
-  .dashboard-header-actions-primary .logout-btn {
+  .actions-primary .logout-btn {
     padding: 6px 10px;
   }
 
-  .dashboard-header-actions-primary .btn-text {
-    display: none; /* Hide "Logout" text on mobile, keep icon */
+  .actions-primary .btn-text {
+    display: none;
   }
 
-  .dashboard-header-actions-secondary {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    width: 100%;
-  }
-
-  .dashboard-header-actions-secondary .btn {
+  .actions-secondary .btn {
     width: 100%;
     font-size: 0.8125rem;
     padding: 8px;
   }
+
 
   /* Filters layout: Search (full) and Selects (half) */
   .dashboard-filters {
