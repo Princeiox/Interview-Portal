@@ -7,10 +7,17 @@
 }
 
 .dashboard-header {
+  padding: 32px 0 24px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard-header-main {
+  display: flex;
   justify-content: space-between;
-  padding: 24px 0;
+  align-items: center;
+  width: 100%;
 }
 
 .dashboard-header-left {
@@ -18,6 +25,20 @@
   align-items: center;
   gap: 16px;
 }
+
+.dashboard-header-actions-primary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboard-header-actions-secondary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
 
 .icon-btn {
   width: 36px;
@@ -209,21 +230,52 @@
 
 @media (max-width: 640px) {
   .dashboard-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 20px;
-    padding-bottom: 24px;
+    padding: 20px 16px;
+    gap: 16px;
+  }
+
+  .dashboard-header-main {
+    flex-wrap: nowrap;
   }
 
   .dashboard-header-left {
-    justify-content: flex-start;
+    min-width: 0;
   }
 
-  .dashboard-header > div:last-child {
+  .dashboard-title {
+    font-size: 1.125rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .dashboard-count {
+    display: none; /* Hide count on small mobile top row to save space */
+  }
+
+  .dashboard-header-actions-primary {
+    gap: 8px;
+  }
+
+  .dashboard-header-actions-primary .logout-btn {
+    padding: 6px 10px;
+  }
+
+  .dashboard-header-actions-primary .btn-text {
+    display: none; /* Hide "Logout" text on mobile, keep icon */
+  }
+
+  .dashboard-header-actions-secondary {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
     width: 100%;
+  }
+
+  .dashboard-header-actions-secondary .btn {
+    width: 100%;
+    font-size: 0.8125rem;
+    padding: 8px;
   }
 
   /* Filters layout: Search (full) and Selects (half) */

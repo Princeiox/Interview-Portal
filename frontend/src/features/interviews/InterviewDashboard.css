@@ -243,6 +243,33 @@
   opacity: 0.9;
 }
 
+.dashboard-header {
+  padding: 32px 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard-header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.dashboard-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dashboard-header-actions-primary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
 @media (max-width: 640px) {
   .interview-stats {
     grid-template-columns: 1fr;
@@ -262,24 +289,43 @@
     flex-direction: column;
     align-items: stretch;
   }
+}
 
 @media (max-width: 640px) {
   .dashboard-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 20px;
-    padding-bottom: 24px;
+    padding: 20px 16px;
+    gap: 16px;
+  }
+
+  .dashboard-header-main {
+    flex-wrap: nowrap;
   }
 
   .dashboard-header-left {
-    justify-content: flex-start;
+    min-width: 0;
   }
 
-  .dashboard-header > div:last-child {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    width: 100%;
+  .dashboard-title {
+    font-size: 1.125rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .dashboard-count {
+    display: none;
+  }
+
+  .dashboard-header-actions-primary {
+    gap: 8px;
+  }
+
+  .dashboard-header-actions-primary .logout-btn {
+    padding: 6px 10px;
+  }
+
+  .dashboard-header-actions-primary .btn-text {
+    display: none;
   }
 
   .dashboard-filters {
@@ -325,6 +371,4 @@
   .interviewer-card {
     padding: 16px;
   }
-}
-
 }

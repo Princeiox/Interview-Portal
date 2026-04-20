@@ -192,18 +192,20 @@ export default function InterviewDashboard() {
   return (
     <div className="dashboard-page">
       <header className="dashboard-header">
-        <div className="dashboard-header-left">
-          <button className="icon-btn" onClick={() => navigate('/')}><ArrowLeft size={20} /></button>
-          <div>
-            <h1 className="dashboard-title">{isAdmin ? 'Create Interviewer' : 'Interview Dashboard'}</h1>
-            <p className="dashboard-count">{isAdmin ? 'Create interviewer and assess candidates' : 'Assess candidates during interviews'}</p>
+        <div className="dashboard-header-main">
+          <div className="dashboard-header-left">
+            <button className="icon-btn" onClick={() => navigate('/')}><ArrowLeft size={20} /></button>
+            <div>
+              <h1 className="dashboard-title">{isAdmin ? 'Create Interviewer' : 'Interview Dashboard'}</h1>
+              <p className="dashboard-count">{isAdmin ? 'Create interviewer and assess candidates' : 'Assess candidates during interviews'}</p>
+            </div>
           </div>
-        </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <ThemeToggle />
-          <button className="btn btn-outline btn-sm" onClick={handleLogout}>
-            <LogOut size={16} /> Logout
-          </button>
+          <div className="dashboard-header-actions-primary">
+            <ThemeToggle />
+            <button className="btn btn-outline btn-sm logout-btn" onClick={handleLogout}>
+              <LogOut size={16} /> <span className="btn-text">Logout</span>
+            </button>
+          </div>
         </div>
       </header>
 

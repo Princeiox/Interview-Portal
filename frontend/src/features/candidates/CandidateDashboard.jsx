@@ -140,23 +140,28 @@ export default function CandidateDashboard() {
   return (
     <div className="dashboard-page">
       <header className="dashboard-header">
-        <div className="dashboard-header-left">
-          <button className="icon-btn" onClick={() => navigate('/')}><ArrowLeft size={20} /></button>
-          <div>
-            <h1 className="dashboard-title">Candidate Dashboard</h1>
-            <p className="dashboard-count">{filtered.length} candidates</p>
+        <div className="dashboard-header-main">
+          <div className="dashboard-header-left">
+            <button className="icon-btn" onClick={() => navigate('/')}><ArrowLeft size={20} /></button>
+            <div>
+              <h1 className="dashboard-title">Candidate Dashboard</h1>
+              <p className="dashboard-count">{filtered.length} candidates</p>
+            </div>
+          </div>
+          <div className="dashboard-header-actions-primary">
+            <ThemeToggle />
+            <button className="btn btn-outline btn-sm logout-btn" onClick={handleLogout}>
+              <LogOut size={16} /> <span className="btn-text">Logout</span>
+            </button>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <button className="btn btn-outline btn-sm" onClick={handleShareLink}>
-              <Share size={14} /> Share Link
-            </button>
-            <button className="btn btn-primary btn-sm" onClick={exportToCSV}>
-              <Download size={14} /> Export CSV
-            </button>
-          <ThemeToggle />
-          <button className="btn btn-outline btn-sm" onClick={handleLogout}>
-            <LogOut size={16} /> Logout
+        
+        <div className="dashboard-header-actions-secondary">
+          <button className="btn btn-outline btn-sm" onClick={handleShareLink}>
+            <Share size={14} /> Share Link
+          </button>
+          <button className="btn btn-primary btn-sm" onClick={exportToCSV}>
+            <Download size={14} /> Export CSV
           </button>
         </div>
       </header>
