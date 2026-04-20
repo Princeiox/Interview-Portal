@@ -227,50 +227,37 @@
     display: grid !important;
     grid-template-columns: 1fr auto;
     padding: 24px 16px;
-    gap: 20px 12px;
+    gap: 16px 12px;
     align-items: center !important;
   }
 
   .dashboard-header-left {
     grid-column: 1;
     grid-row: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
   }
 
   .dashboard-header-right {
-    display: contents; /* Flattens nested groups into the main header grid */
+    display: contents;
   }
 
-  .header-actions-primary {
+  .logout-btn {
     grid-column: 2;
     grid-row: 1;
-    display: flex !important;
-    align-items: center;
-    gap: 8px;
     justify-self: end;
   }
 
-  .header-actions-secondary {
-    grid-column: 1 / span 2;
-    grid-row: 2;
-    display: block !important;
-    width: 100%;
-  }
-
   .export-btn {
-    width: 100%;
-    margin: 0;
-  }
-
-
-
-  .share-btn, .export-btn {
+    grid-column: 1;
+    grid-row: 2;
     width: 100%;
   }
 
+  /* Target ThemeToggle (2nd child of the flattened right container) */
+  .dashboard-header > *:nth-child(3) { 
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
   .logout-btn .btn-text {
     display: none;
   }

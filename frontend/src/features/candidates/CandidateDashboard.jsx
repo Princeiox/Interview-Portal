@@ -142,18 +142,13 @@ export default function CandidateDashboard() {
         </div>
         
         <div className="dashboard-header-right">
-          <div className="header-actions-secondary">
-
-            <button className="btn btn-primary btn-sm export-btn" onClick={exportToCSV}>
-              <Download size={14} /> <span className="btn-text">Export CSV</span>
-            </button>
-          </div>
-          <div className="header-actions-primary">
-            <ThemeToggle />
-            <button className="btn btn-outline btn-sm logout-btn" onClick={handleLogout}>
-              <LogOut size={16} /> <span className="btn-text">Logout</span>
-            </button>
-          </div>
+          <button className="btn btn-primary btn-sm export-btn" onClick={exportToCSV}>
+            <Download size={14} /> <span className="btn-text">Export CSV</span>
+          </button>
+          <ThemeToggle />
+          <button className="btn btn-outline btn-sm logout-btn" onClick={handleLogout}>
+            <LogOut size={16} /> <span className="btn-text">Logout</span>
+          </button>
         </div>
       </header>
 
