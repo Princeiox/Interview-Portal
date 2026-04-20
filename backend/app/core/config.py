@@ -31,6 +31,7 @@ class Settings:
                     "http://localhost:3000",
                     "http://192.168.1.4:5173",
                     "https://interview-portal.vercel.app",
+                    "https://interview-portal-seven.vercel.app",
                     "https://interview-portal-princeioxs-projects.vercel.app"
                 ]
             ),
