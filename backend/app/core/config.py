@@ -32,6 +32,7 @@ class Settings:
                     "http://192.168.1.4:5173",
                     "https://interview-portal.vercel.app",
                     "https://interview-portal-seven.vercel.app",
+                    "https://interview-portal-seven.vercel.app/",
                     "https://interview-portal-princeioxs-projects.vercel.app"
                 ]
             ),
@@ -39,7 +40,7 @@ class Settings:
     )
     BACKEND_CORS_ORIGIN_REGEX: str = os.getenv(
         "BACKEND_CORS_ORIGIN_REGEX",
-        r"https://interview-portal-.*\.vercel\.app",
+        r"https://.*\.vercel\.app",
     )
 
 settings = Settings()
