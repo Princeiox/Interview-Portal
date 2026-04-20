@@ -148,16 +148,12 @@ export default function CandidateDashboard() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <button className="btn btn-outline btn-sm" onClick={handleShareLink}>
-              <Share size={14} /> Share Link
-            </button>
-            <button className="btn btn-primary btn-sm" onClick={exportToCSV}>
-              <Download size={14} /> Export CSV
-            </button>
-          <button className="btn btn-outline btn-sm" onClick={handleLogout}>
-            <LogOut size={16} /> Logout
+          <button className="btn btn-outline btn-sm" onClick={handleShareLink}>
+            <Share size={14} /> Share Link
           </button>
-          <ThemeToggle />
+          <button className="btn btn-primary btn-sm" onClick={exportToCSV}>
+            <Download size={14} /> Export CSV
+          </button>
         </div>
       </header>
 

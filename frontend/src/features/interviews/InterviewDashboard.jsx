@@ -200,10 +200,7 @@ export default function InterviewDashboard() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <button className="btn btn-outline btn-sm" onClick={handleLogout}>
-            <LogOut size={16} /> Logout
-          </button>
-          <ThemeToggle />
+          {/* Dashboard actions can go here */}
         </div>
       </header>
 
