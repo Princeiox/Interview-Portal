@@ -224,41 +224,44 @@
 
 @media (max-width: 640px) {
   .dashboard-header {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: wrap;
-    justify-content: space-between !important;
-    align-items: center;
-    padding: 20px 16px;
-    gap: 0;
+    display: grid !important;
+    grid-template-columns: 1fr auto;
+    padding: 24px 16px;
+    gap: 20px 12px;
+    align-items: center !important;
   }
 
   .dashboard-header-left {
-    order: 1;
+    grid-column: 1;
+    grid-row: 1;
     min-width: 0;
-    flex: 1;
-    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   .dashboard-header-right {
-    display: contents; /* Distributes primary/secondary groups into the parent flex */
+    display: contents; /* Flattens nested groups into the main header grid */
   }
 
   .header-actions-primary {
-    order: 2;
-    display: flex;
+    grid-column: 2;
+    grid-row: 1;
+    display: flex !important;
     align-items: center;
     gap: 8px;
-    margin-bottom: 16px;
+    justify-self: end;
   }
 
   .header-actions-secondary {
-    order: 3;
+    grid-column: 1 / span 2;
+    grid-row: 2;
     display: grid !important;
     grid-template-columns: 1fr 1fr;
     width: 100%;
     gap: 10px;
   }
+
 
   .share-btn, .export-btn {
     width: 100%;

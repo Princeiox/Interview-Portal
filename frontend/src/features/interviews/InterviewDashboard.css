@@ -295,17 +295,16 @@
 
 @media (max-width: 640px) {
   .dashboard-header {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: wrap;
-    justify-content: space-between !important;
-    align-items: center;
     padding: 20px 16px;
-    gap: 0;
+    width: 100%;
   }
 
   .dashboard-header-main {
-    display: contents; /* Allows children to participate in the flex-between of the header */
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 12px;
   }
 
   .dashboard-header-left {
@@ -317,8 +316,9 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    justify-content: flex-end;
+    flex-shrink: 0;
   }
+
 
   .logout-btn .btn-text {
     display: none;
