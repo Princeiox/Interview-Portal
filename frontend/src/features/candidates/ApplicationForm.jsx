@@ -299,7 +299,7 @@ export default function ApplicationForm() {
       <header className="app-form-header">
         <div className="app-form-header-content section-header-row">
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }} onClick={() => navigate(-1)}>
+            <div style={{ cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }} onClick={() => navigate(isEditMode ? `/candidates/${id}` : '/')}>
               <ArrowLeft size={24} />
             </div>
             <div>
@@ -557,11 +557,11 @@ export default function ApplicationForm() {
               </div>
               <div className="form-row" style={{ marginTop: '16px' }}>
                 <div className="form-group">
-                  <label className="form-label">Current CTC (LPA)</label>
+                  <label className="form-label">Current CTC (in LPA)</label>
                   <input className="form-input" placeholder="e.g. 5.5" value={form.current_ctc} onChange={(e) => updateForm('current_ctc', e.target.value)} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Expected CTC (LPA)</label>
+                  <label className="form-label">Expected CTC (in LPA)</label>
                   <input className="form-input" placeholder="e.g. 8.0" value={form.expected_ctc} onChange={(e) => updateForm('expected_ctc', e.target.value)} />
                 </div>
               </div>
@@ -570,7 +570,7 @@ export default function ApplicationForm() {
 
           {isFresher && (
             <div className="form-group" style={{ marginTop: '16px' }}>
-              <label className="form-label">Expected CTC (LPA)</label>
+              <label className="form-label">Expected CTC (in LPA)</label>
               <input className="form-input" placeholder="e.g. 8.0" value={form.expected_ctc} onChange={(e) => updateForm('expected_ctc', e.target.value)} />
             </div>
           )}

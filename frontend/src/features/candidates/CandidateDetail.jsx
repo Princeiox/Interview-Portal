@@ -130,7 +130,7 @@ export default function CandidateDetail() {
   return (
     <div className="detail-page">
       <header className="detail-header">
-        <button className="icon-btn" onClick={() => navigate(-1)}><ArrowLeft size={20} /></button>
+        <button className="icon-btn" onClick={() => navigate(dashboardPath)}><ArrowLeft size={20} /></button>
         <div className="detail-header-info">
           <div className="detail-name-row">
             <h1>{candidate.full_name}</h1>
@@ -258,8 +258,8 @@ export default function CandidateDetail() {
               <h3 className="section-title" style={{ border: 'none' }}>Position Details</h3>
               <div className="info-grid">
                 <div className="info-item"><span className="info-label">EXPERIENCE</span><span className="info-value">{candidate.experience_years}y {candidate.experience_months || 0}m</span></div>
-                <div className="info-item"><span className="info-label">Current CTC</span><span className="info-value">{candidate.current_ctc || 'N/A'}</span></div>
-                <div className="info-item"><span className="info-label">EXPECTED CTC</span><span className="info-value">{candidate.expected_ctc || 'N/A'}</span></div>
+                <div className="info-item"><span className="info-label">Current CTC</span><span className="info-value">{candidate.current_ctc ? `${candidate.current_ctc} LPA` : 'N/A'}</span></div>
+                <div className="info-item"><span className="info-label">EXPECTED CTC</span><span className="info-value">{candidate.expected_ctc ? `${candidate.expected_ctc} LPA` : 'N/A'}</span></div>
                 <div className="info-item">
                   <span className="info-label">NOTICE PERIOD</span>
                   <span className="info-value">

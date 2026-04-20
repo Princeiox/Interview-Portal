@@ -111,8 +111,8 @@ export default function CandidateDashboard() {
       escapeCsv(c.status),
       c.experience_years || 0,
       c.experience_months || 0,
-      escapeCsv(c.current_ctc),
-      escapeCsv(c.expected_ctc),
+      escapeCsv(c.current_ctc ? `${c.current_ctc} LPA` : ''),
+      escapeCsv(c.expected_ctc ? `${c.expected_ctc} LPA` : ''),
       escapeCsv(c.notice_period),
       escapeCsv(formatDate(c.applied_at))
     ]);
@@ -141,7 +141,7 @@ export default function CandidateDashboard() {
     <div className="dashboard-page">
       <header className="dashboard-header">
         <div className="dashboard-header-left">
-          <button className="icon-btn" onClick={() => navigate(-1)}><ArrowLeft size={20} /></button>
+          <button className="icon-btn" onClick={() => navigate('/')}><ArrowLeft size={20} /></button>
           <div>
             <h1 className="dashboard-title">Candidate Dashboard</h1>
             <p className="dashboard-count">{filtered.length} candidates</p>
