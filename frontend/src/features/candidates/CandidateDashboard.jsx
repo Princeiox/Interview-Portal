@@ -231,7 +231,7 @@ export default function CandidateDashboard() {
                   )}
                   {c.expected_ctc && (
                     <span className="chip">
-                      Expected: {c.expected_ctc.toLowerCase().includes('lpa') ? c.expected_ctc : `${c.expected_ctc} LPA`}
+                      Expected: {c.expected_ctc?.toLowerCase().includes('lpa') ? c.expected_ctc : `${c.expected_ctc} LPA`}
                     </span>
                   )}
                 </div>
