@@ -130,13 +130,6 @@ export default function CandidateDashboard() {
     toast.success('Candidates data exported successfully');
   };
 
-  const handleShareLink = () => {
-    const url = `${window.location.origin}/apply`;
-    navigator.clipboard.writeText(url)
-      .then(() => toast.success('Application form link copied!'))
-      .catch(() => toast.error('Failed to copy link'));
-  };
-
   return (
     <div className="dashboard-page">
       <header className="dashboard-header">
@@ -150,9 +143,7 @@ export default function CandidateDashboard() {
         
         <div className="dashboard-header-right">
           <div className="header-actions-secondary">
-            <button className="btn btn-outline btn-sm share-btn" onClick={handleShareLink}>
-              <Share size={14} /> <span className="btn-text">Share Link</span>
-            </button>
+
             <button className="btn btn-primary btn-sm export-btn" onClick={exportToCSV}>
               <Download size={14} /> <span className="btn-text">Export CSV</span>
             </button>

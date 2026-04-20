@@ -256,11 +256,15 @@
   .header-actions-secondary {
     grid-column: 1 / span 2;
     grid-row: 2;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
+    display: block !important;
     width: 100%;
-    gap: 10px;
   }
+
+  .export-btn {
+    width: 100%;
+    margin: 0;
+  }
+
 
 
   .share-btn, .export-btn {
