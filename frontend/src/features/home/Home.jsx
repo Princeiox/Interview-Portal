@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Users, ClipboardCheck } from 'lucide-react';
+import { FileText, Users, ClipboardCheck, LogOut, LogIn } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -47,16 +47,20 @@ export default function Home() {
     <div className="home-page">
       <header className="home-header">
         <div className="home-header-content">
-          <div>
+          <div className="home-header-left">
             <h1 className="home-title">Eulogik Interview Portal</h1>
-            <p className="home-subtitle">Streamlined candidate management</p>
+            <span className="home-subtitle-inline">Streamlined candidate management</span>
           </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div className="home-header-actions">
             <ThemeToggle />
             {isAuthenticated ? (
-              <button className="btn btn-outline" onClick={handleLogout}>Logout</button>
+              <button className="btn btn-outline logout-btn" onClick={handleLogout}>
+                <LogOut size={18} /> <span className="btn-text">Logout</span>
+              </button>
             ) : (
-              <button className="btn btn-primary" onClick={() => navigate('/login')}>Login</button>
+              <button className="btn btn-primary login-btn" onClick={() => navigate('/login')}>
+                <LogIn size={18} /> <span className="btn-text">Login</span>
+              </button>
             )}
           </div>
         </div>
