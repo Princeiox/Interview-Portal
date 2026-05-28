@@ -1,3 +1,10 @@
+/**
+ * InterviewDashboard Component
+ * 
+ * Main management view for interviewers.
+ * Includes functionality to create new interviewers, view stats, 
+ * and filter existing interviewer records.
+ */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -9,12 +16,12 @@ import '../candidates/CandidateDashboard.css';
 import ThemeToggle from '@/components/ThemeToggle';
 import ConfirmModal from '@/components/ConfirmModal';
 
-const STATUS_OPTIONS = ['All Status', 'Interview', 'Screening', 'Applied', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['All Status', 'Interview', 'HR Round', 'Screening', 'Applied', 'Hired', 'Rejected'];
 
 function getStatusBadgeClass(status) {
   const map = {
     Applied: 'badge-applied', Screening: 'badge-screening', Interview: 'badge-interview',
-    Offered: 'badge-offered', Hired: 'badge-hired', Rejected: 'badge-rejected',
+    'HR Round': 'badge-hr-round', Offered: 'badge-offered', Hired: 'badge-hired', Rejected: 'badge-rejected',
   };
   return map[status] || 'badge-applied';
 }
@@ -46,10 +53,19 @@ export default function InterviewDashboard() {
   const [candidates, setCandidates] = useState([]);
   const [interviewers, setInterviewers] = useState([]);
   const [selectedInterviewerId, setSelectedInterviewerId] = useState(null);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All Status');
+  const [search, setSearch] = useState(() => sessionStorage.getItem('interview_search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(() => sessionStorage.getItem('interview_search') || '');
+  const [statusFilter, setStatusFilter] = useState(() => sessionStorage.getItem('interview_statusFilter') || 'All Status');
   const [loading, setLoading] = useState(true);
+
+  // Sync filters to sessionStorage to persist interview dashboard state
+  useEffect(() => {
+    sessionStorage.setItem('interview_search', search);
+  }, [search]);
+
+  useEffect(() => {
+    sessionStorage.setItem('interview_statusFilter', statusFilter);
+  }, [statusFilter]);
 
   // Debounce search to minimize API calls
   useEffect(() => {
@@ -68,6 +84,7 @@ export default function InterviewDashboard() {
     name: '',
     email: '',
     password: '',
+    position: '',
   });
   const [candidateToDelete, setCandidateToDelete] = useState(null);
 
@@ -135,7 +152,7 @@ export default function InterviewDashboard() {
         password: interviewerForm.password,
       });
       setShowCreateInterviewerModal(false);
-      setInterviewerForm({ name: '', email: '', password: '' });
+      setInterviewerForm({ name: '', email: '', password: '', position: '' });
       setShowPassword(false);
       await fetchInterviewers();
       setSelectedInterviewerId(null);
@@ -183,8 +200,8 @@ export default function InterviewDashboard() {
   };
 
   // Stats
-  const interviewCount = candidates.filter(c => c.status === 'Interview').length;
-  const screeningCount = candidates.filter(c => c.status === 'Screening').length;
+  const hiredCount = candidates.filter(c => c.status === 'Hired').length;
+  const appliedCount = candidates.filter(c => c.status === 'Applied').length;
   const totalCount = candidates.length;
   const selectedInterviewer = interviewers.find((item) => item.id === selectedInterviewerId) || null;
   const latestCredentialsForSelected = createdCredentials?.id === selectedInterviewer?.id ? createdCredentials : null;
@@ -194,7 +211,7 @@ export default function InterviewDashboard() {
       <header className="dashboard-header">
         <div className="dashboard-header-main">
           <div className="dashboard-header-left">
-            <button className="icon-btn" onClick={() => navigate('/')}><ArrowLeft size={20} /></button>
+            <button className="icon-btn" onClick={() => navigate('/home')}><ArrowLeft size={20} /></button>
             <div>
               <h1 className="dashboard-title">{isAdmin ? 'Create Interviewer' : 'Interview Dashboard'}</h1>
               <p className="dashboard-count">{isAdmin ? 'Create interviewer and assess candidates' : 'Assess candidates during interviews'}</p>
@@ -219,17 +236,17 @@ export default function InterviewDashboard() {
           </div>
         </div>
         <div className="stat-card card">
-          <div className="stat-icon" style={{ background: '#e0e7ff', color: '#4338ca' }}><ClipboardCheck size={20} /></div>
+          <div className="stat-icon" style={{ background: '#d1fae5', color: '#059669' }}><ClipboardCheck size={20} /></div>
           <div>
-            <p className="stat-value">{interviewCount}</p>
-            <p className="stat-label">In Interview</p>
+            <p className="stat-value">{hiredCount}</p>
+            <p className="stat-label">Hired Candidates</p>
           </div>
         </div>
         <div className="stat-card card">
-          <div className="stat-icon" style={{ background: '#fef3c7', color: '#b45309' }}><Clock size={20} /></div>
+          <div className="stat-icon" style={{ background: '#e0f2fe', color: '#0284c7' }}><Clock size={20} /></div>
           <div>
-            <p className="stat-value">{screeningCount}</p>
-            <p className="stat-label">Screening</p>
+            <p className="stat-value">{appliedCount}</p>
+            <p className="stat-label">Candidates Applied</p>
           </div>
         </div>
       </div>
@@ -315,7 +332,7 @@ export default function InterviewDashboard() {
             <div
               key={c.id}
               className="candidate-card card card-interactive"
-              onClick={() => navigate(`/candidates/${c.id}`)}
+              onClick={() => window.open(`/candidates/${c.id}`, '_blank')}
             >
               <div className="candidate-card-top">
                 <div className="candidate-info">
@@ -417,6 +434,19 @@ export default function InterviewDashboard() {
               </div>
 
               <div className="form-group">
+                <label className="form-label">Designation / Position</label>
+                <input
+                  id="interviewer-position"
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Senior Tech Lead"
+                  value={interviewerForm.position}
+                  onChange={(e) => setInterviewerForm({ ...interviewerForm, position: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
                 <label className="form-label">Password</label>
                 <div className="password-input-wrapper">
                   <input
@@ -484,6 +514,10 @@ export default function InterviewDashboard() {
               <div className="info-item">
                 <span className="info-label">EMAIL ID</span>
                 <span className="info-value">{selectedInterviewer.email}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">DESIGNATION</span>
+                <span className="info-value">{selectedInterviewer.position || 'Not Defined'}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">ROLE</span>

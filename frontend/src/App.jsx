@@ -13,7 +13,7 @@ import InterviewDashboard from '@/features/interviews/InterviewDashboard';
 function ProtectedRoute({ children, roles }) {
   const { isAuthenticated, user } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (roles && user && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  if (roles && user && !roles.includes(user.role)) return <Navigate to="/home" replace />;
   return children;
 }
 
@@ -21,7 +21,8 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Navigate to="/apply" replace />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/apply" element={<ApplicationForm />} />
         <Route path="/apply/:id" element={<ApplicationForm />} />

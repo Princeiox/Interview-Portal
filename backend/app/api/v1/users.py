@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app import models, schemas
-from app.api.deps import get_admin_user
+from app.api.deps import get_admin_user, get_current_active_user
 from app.core import security
 from app.db.database import get_db
 
@@ -17,6 +17,7 @@ def _serialize_interviewer(user: models.User) -> schemas.InterviewerResponse:
         name=user.name,
         email=user.email,
         role=user.role,
+        position=user.position,
         is_active=user.is_active,
         created_at=user.created_at,
         assessments_count=len(user.assessments or []),
@@ -26,7 +27,7 @@ def _serialize_interviewer(user: models.User) -> schemas.InterviewerResponse:
 @router.get("/interviewers", response_model=List[schemas.InterviewerResponse])
 def list_interviewers(
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_admin_user),
+    current_user: models.User = Depends(get_current_active_user),
 ):
     interviewers = (
         db.query(models.User)
@@ -52,6 +53,7 @@ def create_interviewer(
         email=data.email,
         hashed_password=security.get_password_hash(data.password),
         role=models.UserRole.INTERVIEWER,
+        position=data.position,
     )
     db.add(interviewer)
     db.commit()

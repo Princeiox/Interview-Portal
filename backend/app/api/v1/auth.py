@@ -18,8 +18,8 @@ def login(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = 
     User Login Endpoint
     Checks credentials against the database and returns a JWT access token if valid.
     """
-    # 1. Look for the user in the database by their email/username
-    user = db.query(models.User).filter(models.User.email == form_data.username).first()
+    # 1. Look for the user in the database by their email/username (case-insensitive)
+    user = db.query(models.User).filter(models.User.email.ilike(form_data.username)).first()
     
     # 2. Safety check: does the user exist and is their password correct?
     if not user or not security.verify_password(form_data.password, user.hashed_password):
@@ -32,7 +32,12 @@ def login(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = 
     # 3. Create a JWT token with the user's details and role
     access_token_expires = timedelta(minutes=security.settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(
-        data={"sub": user.email, "role": user.role.value}, 
+        data={
+            "sub": user.email, 
+            "role": user.role.value,
+            "name": user.name,
+            "position": user.position
+        }, 
         expires_delta=access_token_expires
     )
     

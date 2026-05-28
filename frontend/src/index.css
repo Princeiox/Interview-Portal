@@ -254,7 +254,7 @@ a {
   cursor: pointer;
   color: var(--color-text-secondary);
   display: flex;
-  alignItems: center;
+  align-items: center;
   justify-content: center;
   padding: 4px;
   transition: color var(--transition-fast);
@@ -308,6 +308,11 @@ a {
   color: #4338ca;
 }
 
+.badge-hr-round {
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
 .badge-offered {
   background: #d1fae5;
   color: #065f46;
@@ -337,6 +342,11 @@ a {
 [data-theme="dark"] .badge-interview {
   background: rgba(99, 102, 241, 0.15);
   color: #a5b4fc;
+}
+
+[data-theme="dark"] .badge-hr-round {
+  background: rgba(147, 51, 234, 0.15);
+  color: #c084fc;
 }
 
 [data-theme="dark"] .badge-offered,
@@ -600,13 +610,17 @@ a {
   padding: 12px 24px;
   font-size: 0.9375rem;
   font-weight: 500;
-  color: var(--color-text-muted);
+  color: #4b5563; /* Make inactive tabs more readable but still distinct in light mode */
   background: none;
   border: none;
   cursor: pointer;
   transition: all var(--transition-fast);
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
+}
+
+[data-theme="dark"] .tab {
+  color: var(--color-text-muted);
 }
 
 .tab:hover {

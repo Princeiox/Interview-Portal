@@ -1,19 +1,30 @@
+/**
+ * CandidateDashboard Component
+ * 
+ * Provides a central hub for managing candidate applications.
+ * Features:
+ * - Search and filter by candidate name, position, and status.
+ * - Exporting candidate data to CSV.
+ * - Integration with ThemeToggle and Auth system.
+ * - Responsive mobile-first design with optimized header alignment.
+ */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import api from '@/api/axios';
-import { ArrowLeft, Search, Filter, LayoutGrid, ChevronRight, LogOut, Mail, Phone, Calendar, Download, Share } from 'lucide-react';
+import { ArrowLeft, Search, Filter, ChevronRight, LogOut, Mail, Phone, Calendar, Download, LayoutGrid, User } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import './CandidateDashboard.css';
 
-const STATUS_OPTIONS = ['All Status', 'Applied', 'Screening', 'Interview', 'Offered', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['All Status', 'Applied', 'Screening', 'Interview', 'HR Round', 'Offered', 'Hired', 'Rejected'];
 
 function getStatusBadgeClass(status) {
   const map = {
     Applied: 'badge-applied',
     Screening: 'badge-screening',
     Interview: 'badge-interview',
+    'HR Round': 'badge-hr-round',
     Offered: 'badge-offered',
     Hired: 'badge-hired',
     Rejected: 'badge-rejected',
@@ -24,24 +35,91 @@ function getStatusBadgeClass(status) {
 function formatDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
-  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  const datePart = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  const timePart = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  return `${datePart} at ${timePart}`;
+}
+
+function getLatestInterviewerName(candidate) {
+  if (!candidate.assessments || candidate.assessments.length === 0) return null;
+  
+  // Sort assessments by conducted_at descending to find the latest
+  const sorted = [...candidate.assessments].sort((a, b) => {
+    return new Date(b.conducted_at) - new Date(a.conducted_at);
+  });
+  
+  const latestAssessment = sorted[0];
+  
+  // Try parsed JSON remarks first, as it represents the actual interviewer conducting the round
+  if (latestAssessment.remarks && latestAssessment.remarks.startsWith('{')) {
+    try {
+      const r = JSON.parse(latestAssessment.remarks);
+      if (r.interviewerInfo?.name) {
+        return r.interviewerInfo.name;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+  
+  // Fall back to direct relation (the user account that created/logged the assessment)
+  if (latestAssessment.interviewer?.name) {
+    return latestAssessment.interviewer.name;
+  }
+  
+  return null;
+}
+
+function getInterviewerForRound(candidate, roundType) {
+  if (!candidate.assessments || candidate.assessments.length === 0) return null;
+  
+  const assessment = candidate.assessments.find(a => 
+    a.assessment_type === roundType || 
+    (roundType === 'Tech Round' && a.assessment_type === 'TECH') ||
+    (roundType === 'HR Round' && a.assessment_type === 'HR')
+  );
+  
+  if (!assessment) return null;
+  
+  if (assessment.remarks && assessment.remarks.startsWith('{')) {
+    try {
+      const r = JSON.parse(assessment.remarks);
+      if (r.interviewerInfo?.name) return r.interviewerInfo.name;
+    } catch (e) {}
+  }
+  
+  return assessment.interviewer?.name || null;
 }
 
 export default function CandidateDashboard() {
   const navigate = useNavigate();
-  const { logout, requestLogout } = useAuth();
+  const { user, requestLogout } = useAuth();
   const toast = useToast();
   const [candidates, setCandidates] = useState([]);
+  const [interviewers, setInterviewers] = useState([]);
 
   const handleLogout = () => {
     requestLogout();
   };
   const [positions, setPositions] = useState([]);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All Status');
-  const [positionFilter, setPositionFilter] = useState('All Positions');
+  const [search, setSearch] = useState(() => sessionStorage.getItem('dashboard_search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(() => sessionStorage.getItem('dashboard_search') || '');
+  const [statusFilter, setStatusFilter] = useState(() => sessionStorage.getItem('dashboard_statusFilter') || 'All Status');
+  const [positionFilter, setPositionFilter] = useState(() => sessionStorage.getItem('dashboard_positionFilter') || 'All Positions');
   const [loading, setLoading] = useState(true);
+
+  // Sync filters to sessionStorage to persist dashboard state
+  useEffect(() => {
+    sessionStorage.setItem('dashboard_search', search);
+  }, [search]);
+
+  useEffect(() => {
+    sessionStorage.setItem('dashboard_statusFilter', statusFilter);
+  }, [statusFilter]);
+
+  useEffect(() => {
+    sessionStorage.setItem('dashboard_positionFilter', positionFilter);
+  }, [positionFilter]);
 
   // Debounce search to minimize API calls
   useEffect(() => {
@@ -60,6 +138,7 @@ export default function CandidateDashboard() {
 
   useEffect(() => {
     fetchPositions();
+    fetchInterviewers();
   }, []);
 
   const fetchCandidates = async () => {
@@ -70,10 +149,35 @@ export default function CandidateDashboard() {
       if (positionFilter !== 'All Positions') params.position = positionFilter;
 
       const res = await api.get('/candidates', { params });
-      setCandidates(res.data);
+      // Sort candidates descending by their application date and time (newest first)
+      const sorted = [...res.data].sort((a, b) => new Date(b.applied_at) - new Date(a.applied_at));
+      setCandidates(sorted);
     } catch (err) {
       console.error('Failed to fetch candidates', err);
       toast.error('Failed to load candidates');
+    }
+  };
+
+  const fetchInterviewers = async () => {
+    try {
+      const res = await api.get('/users/interviewers');
+      setInterviewers(res.data);
+    } catch (err) {
+      console.error('Failed to fetch interviewers', err);
+    }
+  };
+
+  const handleAssignInterviewer = async (candidateId, interviewerId) => {
+    try {
+      const targetVal = interviewerId ? parseInt(interviewerId) : 0;
+      await api.patch(`/candidates/${candidateId}/assign`, null, {
+        params: { interviewer_id: targetVal }
+      });
+      toast.success('Interviewer assigned successfully');
+      fetchCandidates();
+    } catch (err) {
+      console.error('Failed to assign interviewer', err);
+      toast.error('Failed to assign interviewer');
     }
   };
 
@@ -134,7 +238,7 @@ export default function CandidateDashboard() {
     <div className="dashboard-page">
       <header className="dashboard-header">
         <div className="dashboard-header-left">
-          <button className="icon-btn" onClick={() => navigate('/')}><ArrowLeft size={20} /></button>
+          <button className="icon-btn" onClick={() => navigate('/home')}><ArrowLeft size={20} /></button>
           <div>
             <h1 className="dashboard-title">Candidate Dashboard</h1>
             <p className="dashboard-count">{filtered.length} candidates</p>
@@ -153,6 +257,7 @@ export default function CandidateDashboard() {
       </header>
 
       {/* Filters */}
+      {/* Search and Filters Section */}
       <div className="dashboard-filters">
         <div className="search-box">
           <Search size={18} className="search-icon" />
@@ -195,7 +300,7 @@ export default function CandidateDashboard() {
             <div
               key={c.id}
               className="candidate-card card card-interactive"
-              onClick={() => navigate(`/candidates/${c.id}`)}
+              onClick={() => window.open(`/candidates/${c.id}`, '_blank')}
               id={`candidate-${c.id}`}
             >
               <div className="candidate-card-top">
@@ -203,7 +308,25 @@ export default function CandidateDashboard() {
                   <h3 className="candidate-name">{c.full_name}</h3>
                   <p className="candidate-position">{c.position_applied}</p>
                 </div>
-                <div className="candidate-status-group">
+                <div className="candidate-status-group" onClick={(e) => e.stopPropagation()}>
+                  {/* Show assign dropdown only if both Tech & HR rounds are NOT yet completed */}
+                  {(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'INTERVIEWER') && !getInterviewerForRound(c, 'HR Round') && (
+                    <select
+                      className="assign-btn-select"
+                      value={c.interviewer_id || ''}
+                      onChange={(e) => handleAssignInterviewer(c.id, e.target.value)}
+                    >
+                      <option value={c.interviewer_id || ''}>
+                        {c.interviewer ? c.interviewer.name : "Assign"}
+                      </option>
+                      {interviewers
+                        .filter((i) => i.id !== c.interviewer_id)
+                        .map((i) => (
+                          <option key={i.id} value={i.id}>{i.name}</option>
+                        ))}
+                      {c.interviewer && <option value="0">Unassign</option>}
+                    </select>
+                  )}
                   <span className={`badge ${getStatusBadgeClass(c.status)}`}>{c.status}</span>
                   <ChevronRight size={18} className="candidate-arrow" />
                 </div>
@@ -214,6 +337,27 @@ export default function CandidateDashboard() {
                 <span className="meta-item"><Phone size={14} /> {c.phone || 'N/A'}</span>
                 <span className="meta-item"><Calendar size={14} /> Applied on {formatDate(c.applied_at) || 'N/A'}</span>
               </div>
+
+              {(getInterviewerForRound(c, 'Tech Round') || getInterviewerForRound(c, 'HR Round') || (!(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'INTERVIEWER') && c.interviewer)) && (
+                <div className="candidate-meta-rounds" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '10px' }}>
+                  {getInterviewerForRound(c, 'Tech Round') && (
+                    <span className="meta-item" style={{ margin: 0 }}>
+                      <User size={14} /> Tech by: {getInterviewerForRound(c, 'Tech Round')}
+                    </span>
+                  )}
+                  {getInterviewerForRound(c, 'HR Round') && (
+                    <span className="meta-item" style={{ margin: 0 }}>
+                      <User size={14} /> HR by: {getInterviewerForRound(c, 'HR Round')}
+                    </span>
+                  )}
+                  {/* Fallback display if not admin/HR/interviewer and not has rounds but has assignment */}
+                  {!(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'INTERVIEWER') && c.interviewer && !getInterviewerForRound(c, 'Tech Round') && !getInterviewerForRound(c, 'HR Round') && (
+                    <span className="meta-item" style={{ color: 'var(--color-primary)', fontWeight: 600, margin: 0 }}>
+                      <User size={14} /> Assigned: {c.interviewer.name}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {(c.experience_years > 0 || c.experience_months > 0 || c.expected_ctc) && (
                 <div className="candidate-tags">

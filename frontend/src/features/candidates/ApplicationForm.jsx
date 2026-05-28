@@ -1,4 +1,11 @@
-import React, { useState, useRef } from 'react';
+/**
+ * ApplicationForm Component
+ * 
+ * A public-facing form for candidate job applications.
+ * Handles photo/CV uploads, educational background, work experience, 
+ * and dynamic field validation.
+ */
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/context/ToastContext';
 import api, { API_BASE } from '@/api/axios';
@@ -299,7 +306,7 @@ export default function ApplicationForm() {
       <header className="app-form-header">
         <div className="app-form-header-content section-header-row">
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }} onClick={() => navigate(isEditMode ? `/candidates/${id}` : '/')}>
+            <div style={{ cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }} onClick={() => navigate(isEditMode ? `/candidates/${id}` : '/home')}>
               <ArrowLeft size={24} />
             </div>
             <div>
@@ -338,7 +345,7 @@ export default function ApplicationForm() {
             <p style={{ color: 'var(--color-text-secondary)', marginBottom: '32px', fontSize: '1.1rem', lineHeight: '1.6' }}>
               Thank you for applying to <strong>Eulogik</strong>. Your application has been successfully received and our recruitment team will review it shortly.
             </p>
-            <button className="btn btn-primary" onClick={() => navigate('/')} style={{ padding: '12px 32px', fontSize: '1rem' }}>
+            <button className="btn btn-primary" onClick={() => navigate('/home')} style={{ padding: '12px 32px', fontSize: '1rem' }}>
               Return to Home
             </button>
           </div>

@@ -4,6 +4,11 @@ import { fileURLToPath, URL } from "url";
 
 export default defineConfig({
   plugins: [react()],
+  // Bind to 0.0.0.0 so other devices on the same WiFi can access the app
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+  },
   resolve: {
     alias: [
       { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) }

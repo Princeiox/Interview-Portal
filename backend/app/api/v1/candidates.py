@@ -358,6 +358,37 @@ def update_candidate_status(
     return candidate
 
 
+@router.patch("/{candidate_id}/assign", response_model=schemas.CandidateResponse)
+def assign_candidate(
+    candidate_id: int,
+    interviewer_id: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+):
+    """
+    Assign a candidate to a specific interviewer.
+    """
+    candidate = db.query(models.Candidate).filter(models.Candidate.id == candidate_id).first()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    
+    if interviewer_id is not None:
+        if interviewer_id == 0:
+            candidate.interviewer_id = None
+        else:
+            # Check if interviewer exists
+            interviewer = db.query(models.User).filter(models.User.id == interviewer_id).first()
+            if not interviewer:
+                raise HTTPException(status_code=404, detail="Interviewer not found")
+            candidate.interviewer_id = interviewer_id
+    else:
+        candidate.interviewer_id = None
+        
+    db.commit()
+    db.refresh(candidate)
+    return candidate
+
+
 @router.delete("/{candidate_id}")
 def delete_candidate(
     candidate_id: int,

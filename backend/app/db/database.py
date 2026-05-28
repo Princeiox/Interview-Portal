@@ -12,8 +12,11 @@ from app.core.config import settings
 SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 
 # Create the SQLAlchemy engine instance
-# For SQLite, we don't need 'check_same_thread': False unless we use async
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+# For SQLite, we need 'check_same_thread': False for FastAPI multi-threading
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 # Local session factory for creating new database sessions
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

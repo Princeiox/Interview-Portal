@@ -23,6 +23,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     role: UserRole = UserRole.HR
+    position: Optional[str] = None
 
 class UserResponse(BaseModel):
     """Schema for user data in API responses."""
@@ -30,6 +31,7 @@ class UserResponse(BaseModel):
     name: str
     email: str
     role: UserRole
+    position: Optional[str] = None
     is_active: bool
     created_at: datetime
 
@@ -43,6 +45,7 @@ class InterviewerCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
+    position: Optional[str] = None
 
 class InterviewerResponse(UserResponse):
     """Schema for interviewer data shown in the dashboard."""
@@ -145,6 +148,7 @@ class CandidateUpdate(BaseModel):
     statement_of_purpose: Optional[str] = None
     hobbies: Optional[str] = None
     status: Optional[CandidateStatus] = None
+    interviewer_id: Optional[int] = None
 
 # ── Assessment ────────────────────────────────────────────────────────────
 
@@ -226,6 +230,8 @@ class CandidateResponse(BaseModel):
     cv_url: Optional[str] = None
     status: CandidateStatus
     applied_at: datetime
+    interviewer_id: Optional[int] = None
+    interviewer: Optional[UserResponse] = None
     assessments: Optional[List[AssessmentResponse]] = None
 
     class Config:

@@ -34,7 +34,7 @@ export default function Signup() {
         <ThemeToggle />
       </div>
       <div className="auth-container animate-scale-in">
-        <button className="auth-back" onClick={() => navigate('/')}>
+        <button className="auth-back" onClick={() => navigate('/home')}>
           <ArrowLeft size={18} /> Back
         </button>
 

@@ -31,53 +31,109 @@ A professional, full-stack recruitment management system designed for streamlini
 
 ```text
 Interview Portal/
-├── backend/            # FastAPI Backend
-│   ├── app/            # Source code
-│   │   ├── api/        # API v1 routes (auth, candidates, users)
-│   │   ├── core/       # Config and security settings
-│   │   ├── db/         # Database connection and initialization
-│   │   ├── models.py   # SQLAlchemy models
-│   │   └── schemas.py  # Pydantic schemas
-│   ├── uploads/        # Storage for CVs and photos
-│   └── requirements.txt
-└── frontend/           # React Frontend
+├── backend/                # FastAPI Backend
+│   ├── app/                # Source code
+│   │   ├── api/            # API v1 routes (auth, candidates, users, assessments)
+│   │   ├── core/           # Config and security settings
+│   │   ├── db/             # Database connection and initialization
+│   │   ├── models.py       # SQLAlchemy models
+│   │   └── schemas.py      # Pydantic schemas
+│   ├── uploads/            # Storage for CVs and photos
+│   ├── .env                # Environment variables (not committed)
+│   ├── .env.example        # Template for environment variables
+│   ├── create_admin.py     # Admin account setup script
+│   └── requirements.txt    # Python dependencies
+└── frontend/               # React Frontend
     ├── src/
-    │   ├── api/        # Axios configuration
-    │   ├── components/ # Reusable UI components
-    │   ├── context/    # Auth and Toast state management
-    │   ├── pages/      # Dashboard and Form views
-    │   └── App.jsx     # Routing configuration
-    └── package.json
+    │   ├── api/            # Axios configuration
+    │   ├── components/     # Reusable UI components
+    │   ├── context/        # Auth and Toast state management
+    │   ├── features/       # Feature-based views
+    │   └── App.jsx         # Routing configuration
+    ├── .env                # Environment variables (not committed)
+    ├── .env.example        # Template for environment variables
+    └── package.json        # Node.js dependencies
 ```
 
 ## ⚙️ Setup Instructions
 
+### Prerequisites
+- **Python 3.11+** installed
+- **Node.js 18+** installed
+- **PostgreSQL** running locally (or a remote instance)
+
 ### 1. Backend Setup
-1. Navigate to the backend directory: `cd backend`
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   .\venv\Scripts\activate
-   ```
-3. Install dependencies: `pip install -r requirements.txt`
-4. Configure `.env` with your PostgreSQL credentials.
-5. Initialize the database and create an admin user:
-   ```bash
-   python create_admin.py
-   ```
-6. Start the server:
-   ```bash
-   uvicorn app.main:app --reload
-   ```
+
+```bash
+cd backend
+
+# Create and activate a virtual environment
+python -m venv venv
+.\venv\Scripts\activate        # Windows
+# source venv/bin/activate     # macOS/Linux
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment variables
+copy .env.example .env         # Windows
+# cp .env.example .env         # macOS/Linux
+# Then edit .env with your PostgreSQL credentials
+
+# Initialize the database and create an admin user
+python create_admin.py
+
+# Start the server
+uvicorn app.main:app --reload
+```
 
 ### 2. Frontend Setup
-1. Navigate to the frontend directory: `cd frontend`
-2. Install dependencies: `npm install`
-3. Start the development server: `npm run dev`
 
-## 🔐 Credentials (Demo)
-- **Frontend URL**: `http://localhost:5173`
-- **Backend API**: `http://localhost:8000/docs`
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Configure environment variables
+copy .env.example .env         # Windows
+# cp .env.example .env         # macOS/Linux
+# Then edit .env with your backend API URL
+
+# Start the development server
+npm run dev
+```
+
+## 🔧 Environment Variables
+
+### Backend (`backend/.env`)
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/dbname` |
+| `SECRET_KEY` | JWT signing secret | `your-secret-key` |
+| `UPLOAD_DIR` | Directory for file uploads | `uploads` |
+| `FRONTEND_URL` | Frontend URL for CORS | `http://localhost:5173` |
+| `BACKEND_CORS_ORIGINS` | (Optional) Explicit CORS origins | `https://app.com,https://www.app.com` |
+
+### Frontend (`frontend/.env`)
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `VITE_API_URL` | Backend API URL | `http://localhost:8000` |
+
+> **Production tip:** Change `FRONTEND_URL` in the backend `.env` and `VITE_API_URL` in the frontend `.env` to your production URLs.
+
+## 🔐 Default Credentials
+
+- **Email**: `Admin@eulogik.com`
+- **Password**: `Eulogik123`
+
+## 🌐 URLs (Local Development)
+
+- **Frontend**: `http://localhost:5173`
+- **Backend API**: `http://localhost:8000`
+- **API Docs**: `http://localhost:8000/docs`
 
 ---
 *Built with ❤️ by the Eulogik Team.*

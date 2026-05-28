@@ -38,8 +38,15 @@ def create_assessment(
         candidate.status = models.CandidateStatus.REJECTED
     elif rec in ["Hire", "Hired"]:
         candidate.status = models.CandidateStatus.HIRED
+    elif rec == "HR Round":
+        candidate.status = models.CandidateStatus.HR_ROUND
     elif rec in ["Next Round", "Interview"]:
         candidate.status = models.CandidateStatus.INTERVIEW
+    elif rec in ["On Hold", "Waitlist"]:
+        candidate.status = models.CandidateStatus.SCREENING
+
+    # Unassign the interviewer after a round is submitted so a new one can be assigned for the next round
+    candidate.interviewer_id = None
         
     db.commit()
     db.refresh(assessment)
@@ -100,8 +107,12 @@ def update_assessment(
             candidate.status = models.CandidateStatus.REJECTED
         elif rec in ["Hire", "Hired"]:
             candidate.status = models.CandidateStatus.HIRED
+        elif rec == "HR Round":
+            candidate.status = models.CandidateStatus.HR_ROUND
         elif rec in ["Next Round", "Interview"]:
             candidate.status = models.CandidateStatus.INTERVIEW
+        elif rec in ["On Hold", "Waitlist"]:
+            candidate.status = models.CandidateStatus.SCREENING
 
     db.commit()
     db.refresh(assessment)

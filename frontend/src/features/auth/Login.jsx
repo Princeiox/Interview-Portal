@@ -31,7 +31,7 @@ export default function Login() {
       // Attempt to login using the credentials provided
       await login(form.email, form.password);
       toast.success('Glad to have you back!');
-      navigate('/', { replace: true }); // Take the user to the home page on success, replacing login in stack
+      navigate('/home', { replace: true }); // Take the user to the home page on success, replacing login in stack
     } catch (err) {
       // If something goes wrong, tell the user why (common: wrong password)
       toast.error(err.response?.data?.detail || 'Login failed. Please check your credentials.');
@@ -49,7 +49,7 @@ export default function Login() {
 
       <div className="auth-container animate-scale-in">
         {/* Simple back button to return to public view */}
-        <button className="auth-back" onClick={() => navigate('/')}>
+        <button className="auth-back" onClick={() => navigate('/home')}>
           <ArrowLeft size={18} /> Back to Home
         </button>
 

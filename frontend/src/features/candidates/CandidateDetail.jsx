@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import {
   ArrowLeft, Mail, Phone, MapPin, Briefcase, FileText,
-  Plus, Pencil, X, Star, User, GraduationCap, Users, Trash2
+  Plus, Pencil, X, Star, User, GraduationCap, Users, Trash2, Columns
 } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -14,22 +14,48 @@ import './CandidateDetail.css';
 /**
  * ── CONSTANTS ─────────────────────────────────────────────────────────────
  */
-const STATUS_OPTIONS = ['Applied', 'Screening', 'Interview', 'Offered', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['Applied', 'Screening', 'Interview', 'HR Round', 'Offered', 'Hired', 'Rejected'];
 const COMMON_SKILLS = ['Python', 'SQL', 'Fastapi', 'React', 'Node.js', 'AWS'];
-const RECOMMENDATION_LABELS = { 'Hire': 'Hired', 'Reject': 'Rejected', 'Next Round': 'On Hold' };
-const RECOMMENDATION_BADGES = { 'Hire': 'badge-hired', 'Reject': 'badge-rejected', 'Next Round': 'badge-screening' };
+const RECOMMENDATION_LABELS = { 
+  'Hire': 'Hired', 
+  'Reject': 'Rejected', 
+  'Next Round': 'On Hold',
+  'On Hold': 'On Hold',
+  'HR Round': 'HR Round'
+};
+const RECOMMENDATION_BADGES = { 
+  'Hire': 'badge-hired', 
+  'Reject': 'badge-rejected', 
+  'Next Round': 'badge-screening',
+  'On Hold': 'badge-screening',
+  'HR Round': 'badge-interview'
+};
 
 /**
  * ── HELPERS ───────────────────────────────────────────────────────────────
  */
 const getStatusBadgeClass = (s) => {
-  const m = { Applied: 'badge-applied', Screening: 'badge-screening', Interview: 'badge-interview', Offered: 'badge-offered', Hired: 'badge-hired', Rejected: 'badge-rejected' };
+  const m = { 
+    Applied: 'badge-applied', 
+    Screening: 'badge-screening', 
+    Interview: 'badge-interview', 
+    'HR Round': 'badge-hr-round', 
+    Offered: 'badge-offered', 
+    Hired: 'badge-hired', 
+    Rejected: 'badge-rejected' 
+  };
   return m[s] || 'badge-applied';
 };
 
 const formatDate = (ds) => {
   if (!ds) return 'N/A';
   return new Date(ds).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
+const formatCTC = (ctc) => {
+  if (!ctc) return 'N/A';
+  const s = String(ctc);
+  return s.toLowerCase().includes('lpa') ? s : `${s} LPA`;
 };
 
 const StarRating = ({ rating, setRating, size = 22, cursor = 'pointer' }) => (
@@ -59,8 +85,10 @@ export default function CandidateDetail() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [editingAssessment, setEditingAssessment] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isCompareMode, setIsCompareMode] = useState(false);
 
   const dashboardPath = user?.role === 'INTERVIEWER' ? '/interview' : '/candidates';
+  const isPrivileged = user?.role === 'ADMIN' || user?.role === 'HR';
 
   const fetchCandidate = useCallback(async () => {
     try {
@@ -126,15 +154,37 @@ export default function CandidateDetail() {
 
   const photoUrl = candidate.photo_url ? `${API_BASE}${candidate.photo_url}` : null;
   const cvUrl = candidate.cv_url ? `${API_BASE}${candidate.cv_url}` : null;
+  const isPdf = cvUrl && cvUrl.toLowerCase().split('?')[0].endsWith('.pdf');
 
   return (
-    <div className="detail-page">
+    <div className={`detail-page ${isCompareMode ? 'compare-mode' : ''}`}>
       <header className="detail-header">
         <button className="icon-btn" onClick={() => navigate(dashboardPath)}><ArrowLeft size={20} /></button>
         <div className="detail-header-info">
           <div className="detail-name-row">
             <h1>{candidate.full_name}</h1>
-            <span className={`badge ${getStatusBadgeClass(candidate.status)}`}>{candidate.status}</span>
+            {isPrivileged ? (
+              <select
+                className={`status-select-dropdown badge ${getStatusBadgeClass(candidate.status)}`}
+                value={candidate.status}
+                onChange={async (e) => {
+                  const newStatus = e.target.value;
+                  try {
+                    await api.patch(`/candidates/${id}/status`, { status: newStatus });
+                    setCandidate(prev => ({ ...prev, status: newStatus }));
+                    toast.success(`Status updated to ${newStatus}`);
+                  } catch (err) {
+                    toast.error('Failed to update status');
+                  }
+                }}
+              >
+                {STATUS_OPTIONS.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            ) : (
+              <span className={`badge ${getStatusBadgeClass(candidate.status)}`}>{candidate.status}</span>
+            )}
           </div>
           <p className="detail-position">{candidate.position_applied}</p>
         </div>
@@ -142,6 +192,14 @@ export default function CandidateDetail() {
       </header>
 
       <div className="detail-actions">
+        {cvUrl && (
+          <button 
+            className={`btn ${isCompareMode ? 'btn-primary font-bold' : 'btn-outline'} btn-sm`} 
+            onClick={() => setIsCompareMode(!isCompareMode)}
+          >
+            <Columns size={14} style={{ marginRight: '6px' }} /> {isCompareMode ? 'Exit Split View' : 'Split Compare View'}
+          </button>
+        )}
         <button className="btn btn-primary btn-sm" onClick={() => openAssessmentModal('Tech Round')}><Plus size={14} /> Tech Round</button>
         <button className="btn btn-outline btn-sm" onClick={() => openAssessmentModal('HR Round')}><Plus size={14} /> HR Round</button>
         <button className="btn btn-outline btn-sm" onClick={() => navigate(`/apply/${id}`)}><Pencil size={14} /> Edit Details</button>
@@ -178,222 +236,504 @@ export default function CandidateDetail() {
         ))}
       </div>
 
-      <div className="detail-content animate-fade-in">
-        {activeTab === 'profile' && (
-          <>
-            <div className="detail-grid-2">
-              <div className="profile-section" style={{ padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h3 className="section-title" style={{ width: '100%', marginBottom: '12px' }}>Photo</h3>
-                {photoUrl ? <img src={photoUrl} className="detail-photo" onClick={() => setShowPhotoModal(true)} /> : <div className="detail-photo-placeholder"><User size={48} /></div>}
-              </div>
-              <div className="profile-section" style={{ display: 'flex', flexDirection: 'column' }}>
-                <h3 className="section-title">Curriculum Vitae</h3>
-                <div className="cv-container" style={{ border: '1px solid var(--color-border)', borderRadius: '8px', flex: 1, minHeight: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--color-surface)', padding: '24px' }}>
-                  {cvUrl ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                      <FileText size={48} style={{ color: 'var(--color-primary)', opacity: 0.5 }} />
-                      <button onClick={() => window.open(cvUrl, '_blank')} className="btn btn-primary" style={{ padding: '12px 24px' }}>View CV File</button>
-                      <p className="sub-text">Preview not loaded (Click to View)</p>
-                    </div>
+      {isCompareMode ? (
+        <div className="compare-grid animate-fade-in">
+          {/* LEFT PANEL: Dynamic tabbed content */}
+          <div className="compare-left-pane">
+            {activeTab === 'profile' && (
+              <>
+                {/* Bio info */}
+                <div className="profile-section" style={{ display: 'flex', gap: '20px', alignItems: 'center', padding: '16px' }}>
+                  {photoUrl ? (
+                    <img src={photoUrl} className="detail-photo" style={{ width: '80px', height: '106px', margin: 0 }} onClick={() => setShowPhotoModal(true)} />
                   ) : (
-                    <div style={{ textAlign: 'center' }}>
-                      <FileText size={32} style={{ color: 'var(--color-text-muted)', marginBottom: '12px', opacity: 0.3 }} /><p className="text-muted">No CV uploaded</p>
-                    </div>
+                    <div className="detail-photo-placeholder" style={{ width: '80px', height: '106px' }}><User size={24} /></div>
                   )}
-                </div>
-              </div>
-            </div>
-
-            <div className="profile-section">
-              <h3 className="section-title" style={{ border: 'none' }}>Personal Information</h3>
-              <div className="info-grid">
-                <div className="info-item"><span className="info-label">DATE OF BIRTH</span><span className="info-value">{formatDate(candidate.date_of_birth)}</span></div>
-                <div className="info-item"><span className="info-label">GENDER</span><span className="info-value">{candidate.gender || 'N/A'}</span></div>
-                <div className="info-item"><span className="info-label">MARITAL STATUS</span><span className="info-value">{candidate.marital_status || 'N/A'}</span></div>
-              </div>
-            </div>
-
-            <div className="profile-section">
-              <h3 className="section-title" style={{ border: 'none' }}>Contact Information</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <div className="contact-row" style={{ alignItems: 'flex-start' }}>
-                  <Mail className="contact-icon" />
                   <div>
-                    <span className="info-label" style={{ display: 'block', marginBottom: '2px' }}>EMAIL ADDRESS</span>
-                    <a href={`mailto:${candidate.email}`} className="contact-link" style={{ fontSize: '0.95rem' }}>{candidate.email}</a>
-                  </div>
-                </div>
-                
-                <div className="contact-row" style={{ alignItems: 'flex-start' }}>
-                  <Phone className="contact-icon" />
-                  <div>
-                    <span className="info-label" style={{ display: 'block', marginBottom: '2px' }}>PHONE NUMBER</span>
-                    <a href={`tel:${candidate.phone}`} className="contact-link" style={{ fontSize: '0.95rem' }}>{candidate.phone}</a>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>{candidate.full_name}</h3>
+                    <p className="detail-position" style={{ margin: '4px 0 0 0' }}>{candidate.position_applied}</p>
+                    <span className={`badge ${getStatusBadgeClass(candidate.status)}`} style={{ display: 'inline-block', marginTop: '6px' }}>{candidate.status}</span>
                   </div>
                 </div>
 
-                <div className="contact-row" style={{ alignItems: 'flex-start' }}>
-                  <MapPin className="contact-icon" />
-                  <div>
-                    <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>CURRENT ADDRESS</span>
-                    <span style={{ color: 'var(--color-text-primary)', fontSize: '0.95rem', fontWeight: 600, lineHeight: '1.4' }}>{candidate.current_address || 'N/A'}</span>
-                    <p className="sub-text" style={{ marginTop: '2px', fontWeight: 500 }}>{candidate.current_city}, {candidate.current_state}</p>
+                {/* Personal Details */}
+                <div className="profile-section">
+                  <h3 className="section-title" style={{ border: 'none' }}>Personal Information</h3>
+                  <div className="info-grid">
+                    <div className="info-item"><span className="info-label">DATE OF BIRTH</span><span className="info-value">{formatDate(candidate.date_of_birth)}</span></div>
+                    <div className="info-item"><span className="info-label">GENDER</span><span className="info-value">{candidate.gender || 'N/A'}</span></div>
+                    <div className="info-item"><span className="info-label">MARITAL STATUS</span><span className="info-value">{candidate.marital_status || 'N/A'}</span></div>
                   </div>
                 </div>
 
-                {candidate.permanent_address && (
-                  <div className="contact-row" style={{ alignItems: 'flex-start' }}>
-                    <MapPin className="contact-icon" style={{ opacity: 0.6 }} />
-                    <div>
-                      <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>PERMANENT ADDRESS</span>
-                      <span style={{ color: 'var(--color-text-primary)', fontSize: '0.95rem', fontWeight: 600, lineHeight: '1.4' }}>{candidate.permanent_address}</span>
-                      <p className="sub-text" style={{ marginTop: '2px', fontWeight: 500 }}>{candidate.permanent_city}, {candidate.permanent_state}</p>
+                {/* Contact Information */}
+                <div className="profile-section">
+                  <h3 className="section-title" style={{ border: 'none' }}>Contact Information</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className="contact-row">
+                      <Mail className="contact-icon" />
+                      <div>
+                        <span className="info-label" style={{ display: 'block', marginBottom: '2px' }}>EMAIL ADDRESS</span>
+                        <a href={`mailto:${candidate.email}`} className="contact-link">{candidate.email}</a>
+                      </div>
+                    </div>
+                    <div className="contact-row">
+                      <Phone className="contact-icon" />
+                      <div>
+                        <span className="info-label" style={{ display: 'block', marginBottom: '2px' }}>PHONE NUMBER</span>
+                        <a href={`tel:${candidate.phone}`} className="contact-link">{candidate.phone}</a>
+                      </div>
+                    </div>
+                    <div className="contact-row">
+                      <MapPin className="contact-icon" />
+                      <div>
+                        <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>CURRENT ADDRESS</span>
+                        <span style={{ color: 'var(--color-text-primary)', fontSize: '0.95rem', fontWeight: 600 }}>{candidate.current_address || 'N/A'}</span>
+                        <p className="sub-text" style={{ marginTop: '2px' }}>{candidate.current_city}, {candidate.current_state}</p>
+                      </div>
+                    </div>
+                    {candidate.permanent_address && (
+                      <div className="contact-row">
+                        <MapPin className="contact-icon" style={{ opacity: 0.6 }} />
+                        <div>
+                          <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>PERMANENT ADDRESS</span>
+                          <span style={{ color: 'var(--color-text-primary)', fontSize: '0.95rem', fontWeight: 600 }}>{candidate.permanent_address}</span>
+                          <p className="sub-text" style={{ marginTop: '2px' }}>{candidate.permanent_city}, {candidate.permanent_state}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Position Details */}
+                <div className="profile-section">
+                  <h3 className="section-title" style={{ border: 'none' }}>Position Details</h3>
+                  <div className="info-grid">
+                    <div className="info-item"><span className="info-label">EXPERIENCE</span><span className="info-value">{candidate.experience_years}y {candidate.experience_months || 0}m</span></div>
+                    <div className="info-item"><span className="info-label">Current CTC</span><span className="info-value">{formatCTC(candidate.current_ctc)}</span></div>
+                    <div className="info-item"><span className="info-label">EXPECTED CTC</span><span className="info-value">{formatCTC(candidate.expected_ctc)}</span></div>
+                    <div className="info-item"><span className="info-label">NOTICE PERIOD</span><span className="info-value">{candidate.notice_period ? (isNaN(candidate.notice_period) ? candidate.notice_period : `${candidate.notice_period} days`) : 'N/A'}</span></div>
+                  </div>
+                </div>
+
+                {/* Skills */}
+                <div className="profile-section">
+                  <h3 className="section-title" style={{ border: 'none' }}>Skills</h3>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {(Array.isArray(candidate.skills) ? candidate.skills : candidate.skills?.split(/[,]+/).filter(Boolean) || []).map((s, i) => <span key={i} className="chip">{s.trim()}</span>)}
+                  </div>
+                </div>
+
+                {/* Languages */}
+                {candidate.languages && (
+                  <div className="profile-section">
+                    <h3 className="section-title" style={{ border: 'none' }}>Languages</h3>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {(Array.isArray(candidate.languages) ? candidate.languages : candidate.languages?.split(',').filter(Boolean) || []).map((l, i) => <span key={i} className="chip">{l.trim()}</span>)}
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
 
-            <div className="profile-section">
-              <h3 className="section-title" style={{ border: 'none' }}>Position Details</h3>
-              <div className="info-grid">
-                <div className="info-item"><span className="info-label">EXPERIENCE</span><span className="info-value">{candidate.experience_years}y {candidate.experience_months || 0}m</span></div>
-                <div className="info-item"><span className="info-label">Current CTC</span><span className="info-value">{candidate.current_ctc ? `${candidate.current_ctc} LPA` : 'N/A'}</span></div>
-                <div className="info-item"><span className="info-label">EXPECTED CTC</span><span className="info-value">{candidate.expected_ctc ? `${candidate.expected_ctc} LPA` : 'N/A'}</span></div>
-                <div className="info-item">
-                  <span className="info-label">NOTICE PERIOD</span>
-                  <span className="info-value">
-                    {candidate.notice_period 
-                      ? (isNaN(candidate.notice_period) ? candidate.notice_period : `${candidate.notice_period} days`)
-                      : 'N/A'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="profile-section">
-              <h3 className="section-title" style={{ border: 'none' }}>Skills</h3>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {(Array.isArray(candidate.skills) ? candidate.skills : candidate.skills?.split(/[,]+/).filter(Boolean) || []).map((s, i) => <span key={i} className="chip">{s.trim()}</span>)}
-              </div>
-            </div>
-
-            {candidate.languages && (
-              <div className="profile-section">
-                <h3 className="section-title" style={{ border: 'none' }}>Languages</h3>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {(Array.isArray(candidate.languages) ? candidate.languages : candidate.languages?.split(',').filter(Boolean) || []).map((l, i) => <span key={i} className="chip">{l.trim()}</span>)}
-                </div>
-              </div>
-            )}
-
-            {candidate.hobbies && (
-              <div className="profile-section">
-                <h3 className="section-title" style={{ border: 'none' }}>Interests / Hobbies</h3>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {(Array.isArray(candidate.hobbies) ? candidate.hobbies : candidate.hobbies?.split(',').filter(Boolean) || []).map((h, i) => <span key={i} className="chip">{h.trim()}</span>)}
-                </div>
-              </div>
-            )}
-
-            {candidate.statement_of_purpose && (
-              <div className="profile-section">
-                <h3 className="section-title" style={{ border: 'none' }}>Why Should We Hire You?</h3>
-                <p className="comments-text">{candidate.statement_of_purpose}</p>
-              </div>
-            )}
-          </>
-        )}
-
-        {activeTab === 'history' && (
-          <div className="stagger-children">
-            <div className="profile-section">
-              <div className="section-icon-header"><GraduationCap size={20} /> Education History</div>
-              <div className="timeline-list">
-                {candidate.education && candidate.education.length > 0 ? candidate.education.map((edu, i) => (
-                  <div key={i} className="timeline-list-item">
-                    <strong>{edu.degree || 'N/A'}</strong>
-                    <p className="sub-text">
-                      {edu.institution}{edu.institution && edu.graduation_year ? ' • ' : ''}{edu.graduation_year}
-                    </p>
-                    {edu.percentage && <p className="marks-text">Score: {edu.percentage}</p>}
-                  </div>
-                )) : <p className="text-muted">No education details available.</p>}
-              </div>
-            </div>
-            <div className="profile-section">
-              <div className="section-icon-header"><Briefcase size={20} /> Work Experience</div>
-              <div className="timeline-list">
-                {candidate.work_experience && candidate.work_experience.length > 0 ? candidate.work_experience.map((w, i) => (
-                  <div key={i} className="timeline-list-item">
-                    <strong>{w.position || 'N/A'}</strong>
-                    <p className="sub-text">
-                      {w.company_name}{w.company_name && w.from_date ? ' • ' : ''}{formatDate(w.from_date)} - {w.to_date ? formatDate(w.to_date) : 'Present'}
-                    </p>
-                    {w.responsibilities && <p className="comments-text">{w.responsibilities}</p>}
-                  </div>
-                )) : <p className="text-muted">No experience details available.</p>}
-              </div>
-            </div>
-
-            <div className="profile-section">
-              <div className="section-icon-header"><Users size={20} /> Professional References</div>
-              <div className="timeline-list">
-                {candidate.references && candidate.references.length > 0 ? candidate.references.map((ref, i) => (
-                  <div key={i} className="timeline-list-item">
-                    <strong>{ref.name || 'N/A'}</strong>
-                    <p className="sub-text">{ref.designation}{ref.designation && ref.company ? ' at ' : ''}{ref.company}</p>
-                    <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', gap: '16px' }}>
-                      {ref.email && <span title="Email" style={{ color: '#0369a1' }}>{ref.email}</span>}
-                      {ref.phone && <span title="Phone" style={{ color: 'var(--color-text-secondary)' }}>{ref.phone}</span>}
+                {/* Hobbies */}
+                {candidate.hobbies && (
+                  <div className="profile-section">
+                    <h3 className="section-title" style={{ border: 'none' }}>Interests / Hobbies</h3>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {(Array.isArray(candidate.hobbies) ? candidate.hobbies : candidate.hobbies?.split(',').filter(Boolean) || []).map((h, i) => <span key={i} className="chip">{h.trim()}</span>)}
                     </div>
                   </div>
-                )) : <p className="text-muted">No reference details available.</p>}
-              </div>
-            </div>
-          </div>
-        )}
+                )}
 
-        {activeTab === 'assessments' && (
-          <div className="stagger-children">
-            {assessments.length === 0 ? <div className="empty-state"><p>No assessments yet</p></div> : assessments.map(a => {
-              let r = {}; try { r = a.remarks ? (a.remarks.startsWith('{') ? JSON.parse(a.remarks) : { comments: a.remarks }) : {}; } catch(e) { r = { comments: a.remarks }; }
-              const s = r.detailedStars || {};
-              return (
-                <div key={a.id} className="profile-section assessment-result-card">
-                  <div className="assessment-header-row">
-                    <div><h3>{a.assessment_type}</h3><p className="sub-text">By {r.interviewerInfo?.name} on {formatDate(a.conducted_at)}</p></div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span className={`badge ${RECOMMENDATION_BADGES[a.recommendation]}`}>{RECOMMENDATION_LABELS[a.recommendation] || a.recommendation}</span>
-                      <StarRating rating={a.overall_score / 2} size={14} cursor="default" />
+                {/* SOP */}
+                {candidate.statement_of_purpose && (
+                  <div className="profile-section">
+                    <h3 className="section-title" style={{ border: 'none' }}>Why Should We Hire You?</h3>
+                    <p className="comments-text">{candidate.statement_of_purpose}</p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {activeTab === 'history' && (
+              <div className="stagger-children">
+                {/* Education History */}
+                <div className="profile-section">
+                  <div className="section-icon-header"><GraduationCap size={20} /> Education History</div>
+                  <div className="timeline-list">
+                    {candidate.education && candidate.education.length > 0 ? candidate.education.map((edu, i) => (
+                      <div key={i} className="timeline-list-item">
+                        <strong>{edu.degree || 'N/A'}</strong>
+                        <p className="sub-text">
+                          {edu.institution}{edu.institution && edu.graduation_year ? ' • ' : ''}{edu.graduation_year}
+                        </p>
+                        {edu.percentage && <p className="marks-text">Score: {edu.percentage}</p>}
+                      </div>
+                    )) : <p className="text-muted">No education details available.</p>}
+                  </div>
+                </div>
+
+                {/* Work Experience */}
+                <div className="profile-section">
+                  <div className="section-icon-header"><Briefcase size={20} /> Work Experience</div>
+                  <div className="timeline-list">
+                    {candidate.work_experience && candidate.work_experience.length > 0 ? candidate.work_experience.map((w, i) => (
+                      <div key={i} className="timeline-list-item">
+                        <strong>{w.position || 'N/A'}</strong>
+                        <p className="sub-text">
+                          {w.company_name}{w.company_name && w.from_date ? ' • ' : ''}{formatDate(w.from_date)} - {w.to_date ? formatDate(w.to_date) : 'Present'}
+                        </p>
+                        {w.responsibilities && <p className="comments-text">{w.responsibilities}</p>}
+                      </div>
+                    )) : <p className="text-muted">No experience details available.</p>}
+                  </div>
+                </div>
+
+                {/* References */}
+                <div className="profile-section">
+                  <div className="section-icon-header"><Users size={20} /> Professional References</div>
+                  <div className="timeline-list">
+                    {candidate.references && candidate.references.length > 0 ? candidate.references.map((ref, i) => (
+                      <div key={i} className="timeline-list-item">
+                        <strong>{ref.name || 'N/A'}</strong>
+                        <p className="sub-text">{ref.designation}{ref.designation && ref.company ? ' at ' : ''}{ref.company}</p>
+                        <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', gap: '16px' }}>
+                          {ref.email && <span title="Email" style={{ color: '#0369a1' }}>{ref.email}</span>}
+                          {ref.phone && <span title="Phone" style={{ color: 'var(--color-text-secondary)' }}>{ref.phone}</span>}
+                        </div>
+                      </div>
+                    )) : <p className="text-muted">No reference details available.</p>}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'assessments' && (
+              <div className="stagger-children">
+                {assessments.length === 0 ? <div className="empty-state"><p>No assessments yet</p></div> : assessments.map(a => {
+                  let r = {}; try { r = a.remarks ? (a.remarks.startsWith('{') ? JSON.parse(a.remarks) : { comments: a.remarks }) : {}; } catch(e) { r = { comments: a.remarks }; }
+                  const s = r.detailedStars || {};
+                  return (
+                    <div key={a.id} className="profile-section assessment-result-card">
+                      <div className="assessment-header-row">
+                        <div><h3>{a.assessment_type}</h3><p className="sub-text">By {r.interviewerInfo?.name} on {formatDate(a.conducted_at)}</p></div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span className={`badge ${RECOMMENDATION_BADGES[a.recommendation]}`}>{RECOMMENDATION_LABELS[a.recommendation] || a.recommendation}</span>
+                          <StarRating rating={a.overall_score / 2} size={14} cursor="default" />
+                        </div>
+                      </div>
+                      
+                      {r.customSkills?.length > 0 && (
+                        <div className="assessment-remarks-box">
+                          <span className="remarks-label">TECHNICAL SKILLS</span>
+                          <div className="skills-result-grid">{r.customSkills.map((sk, idx) => <div key={idx} className="skill-result-row"><span>{sk.name}</span><StarRating rating={sk.rating} size={12} cursor="default" /></div>)}</div>
+                        </div>
+                      )}
+
+                      <div className="assessment-attributes-grid" style={{ marginTop: '16px' }}>
+                        {[
+                          { l: 'Education', v: s.education }, { l: 'Attitude', v: s.attitude }, { l: 'Analytical', v: s.comprehension },
+                          { l: 'Experience', v: s.relevance }, { l: 'Personality', v: s.personality }, { l: 'Comm.', v: s.communication }
+                        ].map((attr, idx) => (
+                          <div key={idx} className="attr-item"><span className="attr-label">{attr.l}</span><StarRating rating={attr.v} size={12} cursor="default" /></div>
+                        ))}
+                      </div>
+
+                      {r.comments && <div className="assessment-remarks-box bordered"><span className="remarks-label">COMMENTS</span><p className="comments-text">{r.comments}</p></div>}
+                      <div className="card-footer-actions"><button className="btn btn-outline btn-sm" onClick={() => openAssessmentModal(null, a)}><Pencil size={12} /> Edit Assessment</button></div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT PANEL: Resume / CV */}
+          <div className="compare-right-pane">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg)' }}>
+              <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }}>Curriculum Vitae</span>
+              {cvUrl && (
+                <button 
+                  onClick={() => window.open(cvUrl, '_blank')} 
+                  className="btn btn-outline btn-sm" 
+                  style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                >
+                  Open in New Tab
+                </button>
+              )}
+            </div>
+            {cvUrl ? (
+              isPdf ? (
+                <iframe 
+                  src={`${cvUrl}#toolbar=1&navpanes=0`} 
+                  title="CV Preview Compare" 
+                  className="compare-cv-iframe"
+                />
+              ) : (
+                <div style={{ display: 'flex', flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', padding: '24px' }}>
+                  <FileText size={48} style={{ color: 'var(--color-primary)', opacity: 0.5 }} />
+                  <button onClick={() => window.open(cvUrl, '_blank')} className="btn btn-primary">View CV File</button>
+                  <p className="sub-text">Preview not available for this format (Click to View)</p>
+                </div>
+              )
+            ) : (
+              <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+                <p className="text-muted">No CV uploaded</p>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="detail-content animate-fade-in">
+          {activeTab === 'profile' && (
+            <>
+              <div className="detail-grid-2">
+                <div className="profile-section" style={{ padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <h3 className="section-title" style={{ width: '100%', marginBottom: '12px' }}>Photo</h3>
+                  {photoUrl ? <img src={photoUrl} className="detail-photo" onClick={() => setShowPhotoModal(true)} /> : <div className="detail-photo-placeholder"><User size={48} /></div>}
+                </div>
+                <div className="profile-section" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <h3 className="section-title">Curriculum Vitae</h3>
+                  <div 
+                    className="cv-container" 
+                    style={{ 
+                      border: '1px solid var(--color-border)', 
+                      borderRadius: '8px', 
+                      flex: 1, 
+                      minHeight: '340px', 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      background: 'var(--color-surface)', 
+                      padding: cvUrl && isPdf ? '16px' : '24px',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {cvUrl ? (
+                      isPdf ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center' }}>
+                          <iframe 
+                            src={`${cvUrl}#toolbar=0&navpanes=0`} 
+                            title="CV Preview" 
+                            width="100%" 
+                            height="260px" 
+                            style={{ border: 'none', borderRadius: '8px' }}
+                          />
+                          <button 
+                            onClick={() => window.open(cvUrl, '_blank')} 
+                            className="btn btn-primary btn-sm" 
+                            style={{ marginTop: '14px', width: 'auto', padding: '6px 16px' }}
+                          >
+                            Open CV in New Tab
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                          <FileText size={48} style={{ color: 'var(--color-primary)', opacity: 0.5 }} />
+                          <button onClick={() => window.open(cvUrl, '_blank')} className="btn btn-primary" style={{ padding: '12px 24px' }}>View CV File</button>
+                          <p className="sub-text">Preview not available for this format (Click to View)</p>
+                        </div>
+                      )
+                    ) : (
+                      <div style={{ textAlign: 'center' }}>
+                        <FileText size={32} style={{ color: 'var(--color-text-muted)', marginBottom: '12px', opacity: 0.3 }} /><p className="text-muted">No CV uploaded</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="profile-section">
+                <h3 className="section-title" style={{ border: 'none' }}>Personal Information</h3>
+                <div className="info-grid">
+                  <div className="info-item"><span className="info-label">DATE OF BIRTH</span><span className="info-value">{formatDate(candidate.date_of_birth)}</span></div>
+                  <div className="info-item"><span className="info-label">GENDER</span><span className="info-value">{candidate.gender || 'N/A'}</span></div>
+                  <div className="info-item"><span className="info-label">MARITAL STATUS</span><span className="info-value">{candidate.marital_status || 'N/A'}</span></div>
+                </div>
+              </div>
+
+              <div className="profile-section">
+                <h3 className="section-title" style={{ border: 'none' }}>Contact Information</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  <div className="contact-row" style={{ alignItems: 'flex-start' }}>
+                    <Mail className="contact-icon" />
+                    <div>
+                      <span className="info-label" style={{ display: 'block', marginBottom: '2px' }}>EMAIL ADDRESS</span>
+                      <a href={`mailto:${candidate.email}`} className="contact-link" style={{ fontSize: '0.95rem' }}>{candidate.email}</a>
                     </div>
                   </div>
                   
-                  {/* Technical Skills - Reordered above comments as per request */}
-                  {r.customSkills?.length > 0 && (
-                    <div className="assessment-remarks-box">
-                      <span className="remarks-label">TECHNICAL SKILLS</span>
-                      <div className="skills-result-grid">{r.customSkills.map((sk, idx) => <div key={idx} className="skill-result-row"><span>{sk.name}</span><StarRating rating={sk.rating} size={12} cursor="default" /></div>)}</div>
+                  <div className="contact-row" style={{ alignItems: 'flex-start' }}>
+                    <Phone className="contact-icon" />
+                    <div>
+                      <span className="info-label" style={{ display: 'block', marginBottom: '2px' }}>PHONE NUMBER</span>
+                      <a href={`tel:${candidate.phone}`} className="contact-link" style={{ fontSize: '0.95rem' }}>{candidate.phone}</a>
                     </div>
-                  )}
-
-                  <div className="assessment-attributes-grid" style={{ marginTop: '16px' }}>
-                    {[
-                      { l: 'Education', v: s.education }, { l: 'Attitude', v: s.attitude }, { l: 'Analytical', v: s.comprehension },
-                      { l: 'Experience', v: s.relevance }, { l: 'Personality', v: s.personality }, { l: 'Comm.', v: s.communication }
-                    ].map((attr, idx) => (
-                      <div key={idx} className="attr-item"><span className="attr-label">{attr.l}</span><StarRating rating={attr.v} size={12} cursor="default" /></div>
-                    ))}
                   </div>
 
-                  {r.comments && <div className="assessment-remarks-box bordered"><span className="remarks-label">COMMENTS</span><p className="comments-text">{r.comments}</p></div>}
-                  <div className="card-footer-actions"><button className="btn btn-outline btn-sm" onClick={() => openAssessmentModal(null, a)}><Pencil size={12} /> Edit Assessment</button></div>
+                  <div className="contact-row" style={{ alignItems: 'flex-start' }}>
+                    <MapPin className="contact-icon" />
+                    <div>
+                      <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>CURRENT ADDRESS</span>
+                      <span style={{ color: 'var(--color-text-primary)', fontSize: '0.95rem', fontWeight: 600, lineHeight: '1.4' }}>{candidate.current_address || 'N/A'}</span>
+                      <p className="sub-text" style={{ marginTop: '2px', fontWeight: 500 }}>{candidate.current_city}, {candidate.current_state}</p>
+                    </div>
+                  </div>
+
+                  {candidate.permanent_address && (
+                    <div className="contact-row" style={{ alignItems: 'flex-start' }}>
+                      <MapPin className="contact-icon" style={{ opacity: 0.6 }} />
+                      <div>
+                        <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>PERMANENT ADDRESS</span>
+                        <span style={{ color: 'var(--color-text-primary)', fontSize: '0.95rem', fontWeight: 600, lineHeight: '1.4' }}>{candidate.permanent_address}</span>
+                        <p className="sub-text" style={{ marginTop: '2px', fontWeight: 500 }}>{candidate.permanent_city}, {candidate.permanent_state}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </div>
+
+              <div className="profile-section">
+                <h3 className="section-title" style={{ border: 'none' }}>Position Details</h3>
+                <div className="info-grid">
+                  <div className="info-item"><span className="info-label">EXPERIENCE</span><span className="info-value">{candidate.experience_years}y {candidate.experience_months || 0}m</span></div>
+                  <div className="info-item"><span className="info-label">Current CTC</span><span className="info-value">{formatCTC(candidate.current_ctc)}</span></div>
+                  <div className="info-item"><span className="info-label">EXPECTED CTC</span><span className="info-value">{formatCTC(candidate.expected_ctc)}</span></div>
+                  <div className="info-item">
+                    <span className="info-label">NOTICE PERIOD</span>
+                    <span className="info-value">
+                      {candidate.notice_period 
+                        ? (isNaN(candidate.notice_period) ? candidate.notice_period : `${candidate.notice_period} days`)
+                        : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="profile-section">
+                <h3 className="section-title" style={{ border: 'none' }}>Skills</h3>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {(Array.isArray(candidate.skills) ? candidate.skills : candidate.skills?.split(/[,]+/).filter(Boolean) || []).map((s, i) => <span key={i} className="chip">{s.trim()}</span>)}
+                </div>
+              </div>
+
+              {candidate.languages && (
+                <div className="profile-section">
+                  <h3 className="section-title" style={{ border: 'none' }}>Languages</h3>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {(Array.isArray(candidate.languages) ? candidate.languages : candidate.languages?.split(',').filter(Boolean) || []).map((l, i) => <span key={i} className="chip">{l.trim()}</span>)}
+                  </div>
+                </div>
+              )}
+
+              {candidate.hobbies && (
+                <div className="profile-section">
+                  <h3 className="section-title" style={{ border: 'none' }}>Interests / Hobbies</h3>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {(Array.isArray(candidate.hobbies) ? candidate.hobbies : candidate.hobbies?.split(',').filter(Boolean) || []).map((h, i) => <span key={i} className="chip">{h.trim()}</span>)}
+                  </div>
+                </div>
+              )}
+
+              {candidate.statement_of_purpose && (
+                <div className="profile-section">
+                  <h3 className="section-title" style={{ border: 'none' }}>Why Should We Hire You?</h3>
+                  <p className="comments-text">{candidate.statement_of_purpose}</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === 'history' && (
+            <div className="stagger-children">
+              <div className="profile-section">
+                <div className="section-icon-header"><GraduationCap size={20} /> Education History</div>
+                <div className="timeline-list">
+                  {candidate.education && candidate.education.length > 0 ? candidate.education.map((edu, i) => (
+                    <div key={i} className="timeline-list-item">
+                      <strong>{edu.degree || 'N/A'}</strong>
+                      <p className="sub-text">
+                        {edu.institution}{edu.institution && edu.graduation_year ? ' • ' : ''}{edu.graduation_year}
+                      </p>
+                      {edu.percentage && <p className="marks-text">Score: {edu.percentage}</p>}
+                    </div>
+                  )) : <p className="text-muted">No education details available.</p>}
+                </div>
+              </div>
+              <div className="profile-section">
+                <div className="section-icon-header"><Briefcase size={20} /> Work Experience</div>
+                <div className="timeline-list">
+                  {candidate.work_experience && candidate.work_experience.length > 0 ? candidate.work_experience.map((w, i) => (
+                    <div key={i} className="timeline-list-item">
+                      <strong>{w.position || 'N/A'}</strong>
+                      <p className="sub-text">
+                        {w.company_name}{w.company_name && w.from_date ? ' • ' : ''}{formatDate(w.from_date)} - {w.to_date ? formatDate(w.to_date) : 'Present'}
+                      </p>
+                      {w.responsibilities && <p className="comments-text">{w.responsibilities}</p>}
+                    </div>
+                  )) : <p className="text-muted">No experience details available.</p>}
+                </div>
+              </div>
+
+              <div className="profile-section">
+                <div className="section-icon-header"><Users size={20} /> Professional References</div>
+                <div className="timeline-list">
+                  {candidate.references && candidate.references.length > 0 ? candidate.references.map((ref, i) => (
+                    <div key={i} className="timeline-list-item">
+                      <strong>{ref.name || 'N/A'}</strong>
+                      <p className="sub-text">{ref.designation}{ref.designation && ref.company ? ' at ' : ''}{ref.company}</p>
+                      <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', gap: '16px' }}>
+                        {ref.email && <span title="Email" style={{ color: '#0369a1' }}>{ref.email}</span>}
+                        {ref.phone && <span title="Phone" style={{ color: 'var(--color-text-secondary)' }}>{ref.phone}</span>}
+                      </div>
+                    </div>
+                  )) : <p className="text-muted">No reference details available.</p>}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'assessments' && (
+            <div className="stagger-children">
+              {assessments.length === 0 ? <div className="empty-state"><p>No assessments yet</p></div> : assessments.map(a => {
+                let r = {}; try { r = a.remarks ? (a.remarks.startsWith('{') ? JSON.parse(a.remarks) : { comments: a.remarks }) : {}; } catch(e) { r = { comments: a.remarks }; }
+                const s = r.detailedStars || {};
+                return (
+                  <div key={a.id} className="profile-section assessment-result-card">
+                    <div className="assessment-header-row">
+                      <div><h3>{a.assessment_type}</h3><p className="sub-text">By {r.interviewerInfo?.name} on {formatDate(a.conducted_at)}</p></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span className={`badge ${RECOMMENDATION_BADGES[a.recommendation]}`}>{RECOMMENDATION_LABELS[a.recommendation] || a.recommendation}</span>
+                        <StarRating rating={a.overall_score / 2} size={14} cursor="default" />
+                      </div>
+                    </div>
+                    
+                    {/* Technical Skills - Reordered above comments as per request */}
+                    {r.customSkills?.length > 0 && (
+                      <div className="assessment-remarks-box">
+                        <span className="remarks-label">TECHNICAL SKILLS</span>
+                        <div className="skills-result-grid">{r.customSkills.map((sk, idx) => <div key={idx} className="skill-result-row"><span>{sk.name}</span><StarRating rating={sk.rating} size={12} cursor="default" /></div>)}</div>
+                      </div>
+                    )}
+
+                    <div className="assessment-attributes-grid" style={{ marginTop: '16px' }}>
+                      {[
+                        { l: 'Education', v: s.education }, { l: 'Attitude', v: s.attitude }, { l: 'Analytical', v: s.comprehension },
+                        { l: 'Experience', v: s.relevance }, { l: 'Personality', v: s.personality }, { l: 'Comm.', v: s.communication }
+                      ].map((attr, idx) => (
+                        <div key={idx} className="attr-item"><span className="attr-label">{attr.l}</span><StarRating rating={attr.v} size={12} cursor="default" /></div>
+                      ))}
+                    </div>
+
+                    {r.comments && <div className="assessment-remarks-box bordered"><span className="remarks-label">COMMENTS</span><p className="comments-text">{r.comments}</p></div>}
+                    <div className="card-footer-actions"><button className="btn btn-outline btn-sm" onClick={() => openAssessmentModal(null, a)}><Pencil size={12} /> Edit Assessment</button></div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {showAssessmentModal && (
         <div className="modal-overlay" onClick={() => setShowAssessmentModal(false)}>
@@ -408,6 +748,7 @@ export default function CandidateDetail() {
               type={assessmentType}
               initialData={editingAssessment}
               onSubmit={handleSaveAssessment}
+              currentUser={user}
             />
           </div>
         </div>
@@ -437,7 +778,7 @@ export default function CandidateDetail() {
 /**
  * ── SUB-COMPONENT: AssessmentForm ───────────────────────────────────────── (Restored to Standard UI)
  */
-function AssessmentForm({ initialData, onSubmit }) {
+function AssessmentForm({ type, initialData, onSubmit, currentUser }) {
   const [interviewer, setInterviewer] = useState({ name: '', dept: '' });
   const [stars, setStars] = useState({ education: 0, relevance: 0, attitude: 0, personality: 0, comprehension: 0, communication: 0, technical: 0 });
   const [customSkills, setCustomSkills] = useState([]);
@@ -455,10 +796,20 @@ function AssessmentForm({ initialData, onSubmit }) {
         setComments(r.comments || '');
         setOverall(initialData.overall_score / 2 || 0);
         const rec = initialData.recommendation;
-        setDecision(rec === 'Hire' ? 'Hired' : rec === 'Reject' ? 'Rejected' : rec === 'Next Round' ? 'On Hold' : '');
+        setDecision(
+          rec === 'Hire' || rec === 'Hired' ? 'Hired' : 
+          rec === 'Reject' || rec === 'Rejected' ? 'Rejected' : 
+          rec === 'HR Round' ? 'HR Round' : 
+          rec === 'On Hold' || rec === 'Next Round' ? 'On Hold' : ''
+        );
       } catch (e) { console.error(e); }
+    } else if (currentUser) {
+      setInterviewer({
+        name: currentUser.name || '',
+        dept: currentUser.position || ''
+      });
     }
-  }, [initialData]);
+  }, [initialData, currentUser]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -469,7 +820,7 @@ function AssessmentForm({ initialData, onSubmit }) {
       cultural_fit_score: stars.personality * 2,
       overall_score: overall * 2,
       remarks: JSON.stringify(payload),
-      recommendation: decision === 'Hired' ? 'Hire' : decision === 'Rejected' ? 'Reject' : 'Next Round'
+      recommendation: decision === 'Hired' ? 'Hire' : decision === 'Rejected' ? 'Reject' : decision === 'HR Round' ? 'HR Round' : 'On Hold'
     });
   };
 
@@ -524,7 +875,19 @@ function AssessmentForm({ initialData, onSubmit }) {
       <section style={{ padding: '24px', border: '1px solid var(--color-border)', borderRadius: '12px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
           <div><label className="form-label">Overall Rating</label><div style={{ marginTop: '8px' }}><StarRating rating={overall} setRating={setOverall} /></div></div>
-          <div><label className="form-label">Verdict *</label><div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>{['Rejected', 'On Hold', 'Hired'].map(s => <label key={s} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="radio" value={s} checked={decision === s} onChange={e => setDecision(e.target.value)} required /> {s}</label>)}</div></div>
+          <div>
+            <label className="form-label">Verdict *</label>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
+              {(type === 'Tech Round' 
+                ? ['Rejected', 'On Hold', 'HR Round'] 
+                : ['Rejected', 'On Hold', 'Hired']
+              ).map(s => (
+                <label key={s} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input type="radio" value={s} checked={decision === s} onChange={e => setDecision(e.target.value)} required /> {s}
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 

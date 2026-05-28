@@ -22,6 +22,7 @@ class CandidateStatus(str, enum.Enum):
     APPLIED = "Applied"
     SCREENING = "Screening"
     INTERVIEW = "Interview"
+    HR_ROUND = "HR Round"
     OFFERED = "Offered"
     HIRED = "Hired"
     REJECTED = "Rejected"
@@ -47,6 +48,7 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(SqlEnum(UserRole), default=UserRole.HR)
+    position = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -110,8 +112,10 @@ class Candidate(Base):
     # Governance
     status = Column(SqlEnum(CandidateStatus), default=CandidateStatus.APPLIED)
     applied_at = Column(DateTime(timezone=True), server_default=func.now())
+    interviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
-    # Relationship: A candidate can undergo multiple assessment rounds
+    # Relationships
+    interviewer = relationship("User", foreign_keys=[interviewer_id])
     assessments = relationship("Assessment", back_populates="candidate", cascade="all, delete-orphan")
 
 
