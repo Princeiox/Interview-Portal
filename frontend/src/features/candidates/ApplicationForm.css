@@ -1,4 +1,16 @@
 /* ── Application Form ──────────────────────────────────────────────── */
+.brand-logo {
+  height: 44px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  margin-left: 250px;
+}
+
+[data-theme="dark"] .brand-logo {
+  filter: invert(1);
+  mix-blend-mode: screen;
+}
+
 .app-form-page {
   min-height: 100vh;
   background: var(--color-bg);
@@ -65,7 +77,8 @@
 
 .app-form-section-desc {
   font-size: 0.8125rem;
-  color: #374151; /* Dark grey, almost black */
+  color: #374151;
+  /* Dark grey, almost black */
   margin-top: -6px;
   line-height: 1.4;
 }
@@ -139,6 +152,7 @@
 }
 
 @media (max-width: 640px) {
+
   .app-form-section .form-row,
   .app-form-section .form-row-3 {
     grid-template-columns: 1fr;
@@ -312,7 +326,12 @@
     gap: 12px;
   }
 
-  
+  .brand-logo {
+    margin-left: 8px;
+    height: 24px;
+  }
+
+
   .app-form-body {
     padding: 24px 16px 60px;
   }

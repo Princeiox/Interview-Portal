@@ -301,27 +301,31 @@
 
   .dashboard-header-main {
     display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
     width: 100% !important;
-    gap: 12px;
+    gap: 16px;
   }
 
   .dashboard-header-left {
-    flex: 1;
+    display: flex;
+    align-items: center;
+    width: 100%;
     min-width: 0;
   }
 
   .dashboard-header-actions-primary {
     display: flex;
     align-items: center;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
     flex-shrink: 0;
   }
 
 
   .logout-btn .btn-text {
-    display: none;
+    /* Maintained for mobile */
   }
 
 
@@ -349,7 +353,7 @@
   }
 
   .filter-group svg {
-    display: none;
+    /* Maintained for mobile */
   }
 
   .filter-select {

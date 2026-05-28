@@ -313,6 +313,7 @@ export default function ApplicationForm() {
               <h1 style={{ margin: 0, fontSize: '1.25rem' }}>{isEditMode ? 'Edit Candidate' : 'Pre Interview Application'}</h1>
               <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>{isEditMode ? (form.full_name || 'Candidate') : 'Eulogik'}</p>
             </div>
+            <img src="/eulogik-logo.png" alt="Eulogik Logo" className="brand-logo" />
           </div>
           <ThemeToggle />
         </div>

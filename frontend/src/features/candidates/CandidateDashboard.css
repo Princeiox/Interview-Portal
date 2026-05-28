@@ -224,42 +224,30 @@
 
 @media (max-width: 640px) {
   .dashboard-header {
-    display: grid !important;
-    grid-template-columns: 1fr auto;
-    padding: 24px 16px;
-    gap: 16px 12px;
-    align-items: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 20px 16px !important;
+    gap: 16px !important;
   }
 
   .dashboard-header-left {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .dashboard-header-right {
-    display: contents;
-  }
-
-  .logout-btn {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-  }
-
-  .export-btn {
-    grid-column: 1;
-    grid-row: 2;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     width: 100%;
   }
 
-  /* Target ThemeToggle (2nd child of the flattened right container) */
-  .dashboard-header > *:nth-child(3) { 
-    grid-column: 2;
-    grid-row: 2;
-    justify-self: end;
+  .dashboard-header-right {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
   }
+
   .logout-btn .btn-text {
-    display: none;
+    /* Maintained for mobile */
   }
 
   .dashboard-title {
@@ -270,7 +258,7 @@
   }
   
   .dashboard-count {
-    display: none;
+    /* Maintained for mobile */
   }
 
 
@@ -299,7 +287,7 @@
   }
 
   .filter-group svg {
-    display: none; /* Hide icons on small mobile to save space if needed */
+    /* Maintained for mobile */
   }
 
   .filter-select {
@@ -317,6 +305,17 @@
   .candidate-card {
     padding: 16px;
   }
+  .candidate-card-top {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .candidate-status-group {
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
   .candidate-name {
     font-size: 1rem;
   }
