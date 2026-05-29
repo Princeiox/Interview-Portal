@@ -303,6 +303,11 @@ a {
   color: #b45309;
 }
 
+.badge-on-hold {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
 .badge-interview {
   background: #e0e7ff;
   color: #4338ca;
@@ -337,6 +342,11 @@ a {
 [data-theme="dark"] .badge-screening {
   background: rgba(245, 158, 11, 0.15);
   color: #fbbf24;
+}
+
+[data-theme="dark"] .badge-on-hold {
+  background: rgba(107, 114, 128, 0.15);
+  color: #d1d5db;
 }
 
 [data-theme="dark"] .badge-interview {

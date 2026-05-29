@@ -14,7 +14,7 @@ import './CandidateDetail.css';
 /**
  * ── CONSTANTS ─────────────────────────────────────────────────────────────
  */
-const STATUS_OPTIONS = ['Applied', 'Screening', 'Interview', 'HR Round', 'Offered', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['Applied', 'Screening', 'Interview', 'HR Round', 'On Hold', 'Offered', 'Hired', 'Rejected'];
 const COMMON_SKILLS = ['Python', 'SQL', 'Fastapi', 'React', 'Node.js', 'AWS'];
 const RECOMMENDATION_LABELS = { 
   'Hire': 'Hired', 
@@ -27,7 +27,7 @@ const RECOMMENDATION_BADGES = {
   'Hire': 'badge-hired', 
   'Reject': 'badge-rejected', 
   'Next Round': 'badge-screening',
-  'On Hold': 'badge-screening',
+  'On Hold': 'badge-on-hold',
   'HR Round': 'badge-interview'
 };
 
@@ -40,6 +40,7 @@ const getStatusBadgeClass = (s) => {
     Screening: 'badge-screening', 
     Interview: 'badge-interview', 
     'HR Round': 'badge-hr-round', 
+    'On Hold': 'badge-on-hold',
     Offered: 'badge-offered', 
     Hired: 'badge-hired', 
     Rejected: 'badge-rejected' 

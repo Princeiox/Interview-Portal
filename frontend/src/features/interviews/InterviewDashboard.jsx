@@ -16,12 +16,12 @@ import '../candidates/CandidateDashboard.css';
 import ThemeToggle from '@/components/ThemeToggle';
 import ConfirmModal from '@/components/ConfirmModal';
 
-const STATUS_OPTIONS = ['All Status', 'Interview', 'HR Round', 'Screening', 'Applied', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['All Status', 'Interview', 'HR Round', 'Screening', 'Applied', 'On Hold', 'Hired', 'Rejected'];
 
 function getStatusBadgeClass(status) {
   const map = {
     Applied: 'badge-applied', Screening: 'badge-screening', Interview: 'badge-interview',
-    'HR Round': 'badge-hr-round', Offered: 'badge-offered', Hired: 'badge-hired', Rejected: 'badge-rejected',
+    'HR Round': 'badge-hr-round', 'On Hold': 'badge-on-hold', Offered: 'badge-offered', Hired: 'badge-hired', Rejected: 'badge-rejected',
   };
   return map[status] || 'badge-applied';
 }

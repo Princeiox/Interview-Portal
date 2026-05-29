@@ -17,7 +17,7 @@ import { ArrowLeft, Search, Filter, ChevronRight, LogOut, Mail, Phone, Calendar,
 import ThemeToggle from '@/components/ThemeToggle';
 import './CandidateDashboard.css';
 
-const STATUS_OPTIONS = ['All Status', 'Applied', 'Screening', 'Interview', 'HR Round', 'Offered', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['All Status', 'Applied', 'Screening', 'Interview', 'HR Round', 'On Hold', 'Offered', 'Hired', 'Rejected'];
 
 function getStatusBadgeClass(status) {
   const map = {
@@ -25,6 +25,7 @@ function getStatusBadgeClass(status) {
     Screening: 'badge-screening',
     Interview: 'badge-interview',
     'HR Round': 'badge-hr-round',
+    'On Hold': 'badge-on-hold',
     Offered: 'badge-offered',
     Hired: 'badge-hired',
     Rejected: 'badge-rejected',
@@ -201,25 +202,42 @@ export default function CandidateDashboard() {
     const headers = [
       'Candidate ID', 'Full Name', 'Email', 'Phone', 'Position Applied', 
       'Status', 'Experience (Years)', 'Experience (Months)', 
-      'Current CTC', 'Expected CTC', 'Notice Period', 'Date Applied'
+      'Current CTC', 'Expected CTC', 'Notice Period', 'Date Applied',
+      'Tech Round Score', 'Tech Round Recommendation', 'HR Round Score', 'HR Round Recommendation'
     ];
     
     const escapeCsv = (str) => `"${String(str || '').replace(/"/g, '""')}"`;
     
-    const rows = filtered.map(c => [
-      c.id || '',
-      escapeCsv(c.full_name),
-      escapeCsv(c.email),
-      escapeCsv(c.phone),
-      escapeCsv(c.position_applied),
-      escapeCsv(c.status),
-      c.experience_years || 0,
-      c.experience_months || 0,
-      escapeCsv(c.current_ctc ? `${c.current_ctc} LPA` : ''),
-      escapeCsv(c.expected_ctc ? `${c.expected_ctc} LPA` : ''),
-      escapeCsv(c.notice_period),
-      escapeCsv(formatDate(c.applied_at))
-    ]);
+    const getRoundData = (assessments, type) => {
+      if (!assessments || !Array.isArray(assessments)) return { score: '', rec: '' };
+      const round = assessments.find(a => a.assessment_type === type || a.assessment_type === (type === 'Tech Round' ? 'TECH' : 'HR'));
+      if (!round) return { score: '', rec: '' };
+      return { score: round.overall_score || '', rec: round.recommendation || '' };
+    };
+
+    const rows = filtered.map(c => {
+      const tech = getRoundData(c.assessments, 'Tech Round');
+      const hr = getRoundData(c.assessments, 'HR Round');
+
+      return [
+        c.id || '',
+        escapeCsv(c.full_name),
+        escapeCsv(c.email),
+        escapeCsv(c.phone),
+        escapeCsv(c.position_applied),
+        escapeCsv(c.status),
+        c.experience_years || 0,
+        c.experience_months || 0,
+        escapeCsv(c.current_ctc ? `${c.current_ctc} LPA` : ''),
+        escapeCsv(c.expected_ctc ? `${c.expected_ctc} LPA` : ''),
+        escapeCsv(c.notice_period),
+        escapeCsv(formatDate(c.applied_at)),
+        tech.score,
+        escapeCsv(tech.rec),
+        hr.score,
+        escapeCsv(hr.rec)
+      ];
+    });
     
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     
@@ -309,8 +327,8 @@ export default function CandidateDashboard() {
                   <p className="candidate-position">{c.position_applied}</p>
                 </div>
                 <div className="candidate-status-group" onClick={(e) => e.stopPropagation()}>
-                  {/* Show assign dropdown only if both Tech & HR rounds are NOT yet completed */}
-                  {(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'INTERVIEWER') && !getInterviewerForRound(c, 'HR Round') && (
+                  {/* Show assign dropdown only for Tech round (Interview status) */}
+                  {(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'INTERVIEWER') && c.status === 'Interview' && !getInterviewerForRound(c, 'Tech Round') && (
                     <select
                       className="assign-btn-select"
                       value={c.interviewer_id || ''}

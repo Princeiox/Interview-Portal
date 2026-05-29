@@ -285,7 +285,11 @@ def list_candidates(
     Retrieve a list of candidates with optional search and filtering.
     Requires authentication.
     """
-    q = db.query(models.Candidate).order_by(models.Candidate.applied_at.desc())
+    from sqlalchemy.orm import selectinload
+    q = db.query(models.Candidate).options(
+        selectinload(models.Candidate.assessments).selectinload(models.Assessment.interviewer),
+        selectinload(models.Candidate.interviewer)
+    ).order_by(models.Candidate.applied_at.desc())
 
     # Text search across name, email, and position
     if search:

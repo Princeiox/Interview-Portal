@@ -647,6 +647,12 @@
   border-color: rgba(251, 191, 36, 0.3) !important;
 }
 
+[data-theme="dark"] .status-select-dropdown.badge-on-hold {
+  background-color: #3f3f46 !important;
+  color: #d4d4d8 !important;
+  border-color: rgba(212, 212, 216, 0.3) !important;
+}
+
 [data-theme="dark"] .status-select-dropdown.badge-interview {
   background-color: #312e81 !important;
   color: #a5b4fc !important;

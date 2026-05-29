@@ -23,6 +23,7 @@ class CandidateStatus(str, enum.Enum):
     SCREENING = "Screening"
     INTERVIEW = "Interview"
     HR_ROUND = "HR Round"
+    ON_HOLD = "On Hold"
     OFFERED = "Offered"
     HIRED = "Hired"
     REJECTED = "Rejected"
@@ -110,7 +111,7 @@ class Candidate(Base):
     cv_url = Column(String, nullable=True)      # Relative path to stored CV document
 
     # Governance
-    status = Column(SqlEnum(CandidateStatus), default=CandidateStatus.APPLIED)
+    status = Column(SqlEnum(CandidateStatus, values_callable=lambda x: [e.value for e in x]), default=CandidateStatus.APPLIED)
     applied_at = Column(DateTime(timezone=True), server_default=func.now())
     interviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
@@ -129,7 +130,7 @@ class Assessment(Base):
     id = Column(Integer, primary_key=True, index=True)
     candidate_id = Column(Integer, ForeignKey("candidates.id"), nullable=False)
     interviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    assessment_type = Column(SqlEnum(AssessmentType), nullable=False)
+    assessment_type = Column(SqlEnum(AssessmentType, values_callable=lambda x: [e.value for e in x]), nullable=False)
 
     # Performance Metrics (Standard 1-10 scale)
     technical_score = Column(Integer, nullable=True)

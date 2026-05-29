@@ -362,61 +362,59 @@ export default function ApplicationForm() {
             </section>
           )}
 
-          {!isEditMode && (
-            <section className="app-form-section">
-              <h2 className="app-form-section-title">Photo & Resume</h2>
-              <p className="app-form-section-desc">Upload your recent photo and CV/Resume<br />PDF, DOC, or DOCX</p>
+          <section className="app-form-section">
+            <h2 className="app-form-section-title">Photo & Resume</h2>
+            <p className="app-form-section-desc">Upload your recent photo and CV/Resume<br />PDF, DOC, or DOCX</p>
 
-              <div className="upload-row">
-                <div className="upload-photo-area" onClick={() => photoRef.current.click()} style={{ position: 'relative' }}>
-                  {photoPreview ? (
-                    <>
-                      <img src={photoPreview} alt="Preview" className="upload-photo-preview" />
-                      <button type="button" onClick={removePhoto} style={{ position: 'absolute', top: '5px', right: '5px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>
-                        <X size={14} />
-                      </button>
-                    </>
-                  ) : (
-                    <div className="upload-placeholder">
-                      <User size={32} />
-                      <span>Upload Photo <span style={{ color: 'var(--color-error)' }}>*</span></span>
-                    </div>
-                  )}
-                  <input ref={photoRef} type="file" accept="image/*" onChange={handlePhotoChange} hidden />
-                </div>
-
-                <div className="upload-cv-area" onClick={() => cvRef.current.click()} style={{ position: 'relative', minHeight: '140px', padding: cvPreview ? '0' : '20px' }}>
-                  {cvName && (
-                    <button type="button" onClick={removeCv} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>
+            <div className="upload-row">
+              <div className="upload-photo-area" onClick={() => photoRef.current.click()} style={{ position: 'relative' }}>
+                {photoPreview ? (
+                  <>
+                    <img src={photoPreview} alt="Preview" className="upload-photo-preview" />
+                    <button type="button" onClick={removePhoto} style={{ position: 'absolute', top: '5px', right: '5px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}>
                       <X size={14} />
                     </button>
-                  )}
-                  {cvPreview ? (
-                    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                      <iframe src={`${cvPreview}#toolbar=0&navpanes=0&scrollbar=0`} width="100%" height="180px" title="CV Preview" style={{ border: 'none', pointerEvents: 'none', overflow: 'hidden' }} scrolling="no" />
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', fontSize: '0.7rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cvName}</span>
-                        <span style={{ opacity: 0.8 }}>Change</span>
-                      </div>
-                    </div>
-                  ) : cvName ? (
-                    <div className="upload-placeholder" style={{ padding: '20px' }}>
-                      <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📄</div>
-                      <span style={{ fontWeight: 600, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cvName}</span>
-                      <small style={{ color: 'var(--color-text-muted)' }}>Click to change</small>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload size={24} />
-                      <span>Upload CV/Resume <span style={{ color: 'var(--color-error)' }}>*</span></span>
-                      <small>PDF, DOC, DOCX</small>
-                    </>
-                  )}
-                  <input ref={cvRef} type="file" accept=".pdf,.doc,.docx" onChange={handleCvChange} hidden />
-                </div>
+                  </>
+                ) : (
+                  <div className="upload-placeholder">
+                    <User size={32} />
+                    <span>Upload Photo <span style={{ color: 'var(--color-error)' }}>*</span></span>
+                  </div>
+                )}
+                <input ref={photoRef} type="file" accept="image/*" onChange={handlePhotoChange} hidden />
               </div>
-            </section>
-          )}
+
+              <div className="upload-cv-area" onClick={() => cvRef.current.click()} style={{ position: 'relative', minHeight: '140px', padding: cvPreview ? '0' : '20px' }}>
+                {cvName && (
+                  <button type="button" onClick={removeCv} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>
+                    <X size={14} />
+                  </button>
+                )}
+                {cvPreview ? (
+                  <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                    <iframe src={`${cvPreview}#toolbar=0&navpanes=0&scrollbar=0`} width="100%" height="180px" title="CV Preview" style={{ border: 'none', pointerEvents: 'none', overflow: 'hidden' }} scrolling="no" />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', fontSize: '0.7rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cvName}</span>
+                      <span style={{ opacity: 0.8 }}>Change</span>
+                    </div>
+                  </div>
+                ) : cvName ? (
+                  <div className="upload-placeholder" style={{ padding: '20px' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📄</div>
+                    <span style={{ fontWeight: 600, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cvName}</span>
+                    <small style={{ color: 'var(--color-text-muted)' }}>Click to change</small>
+                  </div>
+                ) : (
+                  <>
+                    <Upload size={24} />
+                    <span>Upload CV/Resume <span style={{ color: 'var(--color-error)' }}>*</span></span>
+                    <small>PDF, DOC, DOCX</small>
+                  </>
+                )}
+                <input ref={cvRef} type="file" accept=".pdf,.doc,.docx" onChange={handleCvChange} hidden />
+              </div>
+            </div>
+          </section>
 
           {/* Personal Information */}
           <section className="app-form-section">
@@ -557,7 +555,7 @@ export default function ApplicationForm() {
                 required
               >
                 <option value="">Select position</option>
-                {['Software Engineer', 'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'UI/UX Designer', 'QA Engineer', 'DevOps Engineer', 'Product Manager'].map(p => <option key={p} value={p}>{p}</option>)}
+                {['Software Engineer', 'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'UI/UX Designer', 'QA Engineer', 'DevOps Engineer', 'Product Manager', 'Marketing Intern', 'HR', 'HR Intern', 'Python Developer', 'SDE Intern'].map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
             <div style={{ margin: '20px 0 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
