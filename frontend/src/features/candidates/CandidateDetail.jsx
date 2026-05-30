@@ -88,7 +88,7 @@ export default function CandidateDetail() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isCompareMode, setIsCompareMode] = useState(false);
 
-  const dashboardPath = user?.role === 'INTERVIEWER' ? '/interview' : '/candidates';
+  const dashboardPath = '/candidates';
   const isPrivileged = user?.role === 'ADMIN' || user?.role === 'HR';
 
   const fetchCandidate = useCallback(async () => {

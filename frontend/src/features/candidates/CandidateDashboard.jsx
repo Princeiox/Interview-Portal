@@ -327,8 +327,8 @@ export default function CandidateDashboard() {
                   <p className="candidate-position">{c.position_applied}</p>
                 </div>
                 <div className="candidate-status-group" onClick={(e) => e.stopPropagation()}>
-                  {/* Show assign dropdown only for Tech round (Interview status) */}
-                  {(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'INTERVIEWER') && c.status === 'Interview' && !getInterviewerForRound(c, 'Tech Round') && (
+                  {/* Show assign dropdown only when the candidate status is 'Applied' and there's no interviewer assigned yet for Tech round */}
+                  {(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'INTERVIEWER') && c.status === 'Applied' && !getInterviewerForRound(c, 'Tech Round') && (
                     <select
                       className="assign-btn-select"
                       value={c.interviewer_id || ''}
