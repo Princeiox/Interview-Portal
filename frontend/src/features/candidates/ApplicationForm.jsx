@@ -115,7 +115,7 @@ export default function ApplicationForm() {
         })
         .catch(err => {
           console.error(err);
-          toast.error("Failed to load candidate data");
+          toast.error(err.isNetworkError ? err.message : "Failed to load candidate data");
           setLoading(false);
         });
     }
@@ -168,6 +168,11 @@ export default function ApplicationForm() {
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 3 * 1024 * 1024) {
+        toast.error('Photo size must be less than 3MB');
+        e.target.value = '';
+        return;
+      }
       setPhoto(file);
       setPhotoPreview(URL.createObjectURL(file));
     }
@@ -176,6 +181,11 @@ export default function ApplicationForm() {
   const handleCvChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 3 * 1024 * 1024) {
+        toast.error('CV/Resume size must be less than 3MB');
+        e.target.value = '';
+        return;
+      }
       setCv(file);
       setCvName(file.name);
       if (file.type === 'application/pdf') {
@@ -271,7 +281,7 @@ export default function ApplicationForm() {
       setIsSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      toast.error(err.message || 'Failed to submit application');
+      toast.error(err.isNetworkError ? err.message : (err.message || 'Failed to submit application'));
     } finally {
       setLoading(false);
     }

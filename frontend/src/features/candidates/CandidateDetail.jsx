@@ -96,7 +96,7 @@ export default function CandidateDetail() {
       const res = await api.get(`/candidates/${id}`);
       setCandidate(res.data);
     } catch (err) {
-      toast.error('Failed to load candidate');
+      toast.error(err.isNetworkError ? err.message : 'Failed to load candidate');
       navigate(dashboardPath);
     }
   }, [id, navigate, dashboardPath, toast]);
@@ -129,7 +129,18 @@ export default function CandidateDetail() {
       fetchAssessments();
       fetchCandidate();
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Error saving assessment');
+      toast.error(err.isNetworkError ? err.message : (err.response?.data?.detail || 'Error saving assessment'));
+    }
+  };
+
+  const handleDeleteAssessment = async (assessmentId) => {
+    if (!window.confirm("Are you sure you want to delete this assessment?")) return;
+    try {
+      await api.delete(`/assessments/${assessmentId}`);
+      toast.success('Assessment deleted successfully');
+      fetchAssessments();
+    } catch (err) {
+      toast.error(err.isNetworkError ? err.message : (err.response?.data?.detail || 'Error deleting assessment'));
     }
   };
 
@@ -140,7 +151,7 @@ export default function CandidateDetail() {
       toast.warning(`${name} has been deleted successfully.`);
       navigate(dashboardPath, { replace: true });
     } catch (err) {
-      toast.error('Error deleting candidate');
+      toast.error(err.isNetworkError ? err.message : 'Error deleting candidate');
     }
   };
 
@@ -175,7 +186,7 @@ export default function CandidateDetail() {
                     setCandidate(prev => ({ ...prev, status: newStatus }));
                     toast.success(`Status updated to ${newStatus}`);
                   } catch (err) {
-                    toast.error('Failed to update status');
+                    toast.error(err.isNetworkError ? err.message : 'Failed to update status');
                   }
                 }}
               >
@@ -727,7 +738,12 @@ export default function CandidateDetail() {
                     </div>
 
                     {r.comments && <div className="assessment-remarks-box bordered"><span className="remarks-label">COMMENTS</span><p className="comments-text">{r.comments}</p></div>}
-                    <div className="card-footer-actions"><button className="btn btn-outline btn-sm" onClick={() => openAssessmentModal(null, a)}><Pencil size={12} /> Edit Assessment</button></div>
+                    <div className="card-footer-actions">
+                      <button className="btn btn-outline btn-sm" onClick={() => openAssessmentModal(null, a)}><Pencil size={12} /> Edit Assessment</button>
+                      {a.assessment_type === 'Tech Round' && (
+                        <button className="btn btn-outline btn-sm" style={{ color: 'var(--color-error)', borderColor: 'var(--color-error)' }} onClick={() => handleDeleteAssessment(a.id)}><Trash2 size={12} /> Delete</button>
+                      )}
+                    </div>
                   </div>
                 );
               })}

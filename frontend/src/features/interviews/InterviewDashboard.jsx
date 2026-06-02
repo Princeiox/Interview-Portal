@@ -134,7 +134,7 @@ export default function InterviewDashboard() {
         return null;
       });
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to load interviewers');
+      toast.error(err.isNetworkError ? err.message : (err.response?.data?.detail || 'Failed to load interviewers'));
     } finally {
       setLoadingInterviewers(false);
     }
@@ -158,7 +158,7 @@ export default function InterviewDashboard() {
       setSelectedInterviewerId(null);
       toast.success('Interviewer account created successfully.');
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Could not create interviewer');
+      toast.error(err.isNetworkError ? err.message : (err.response?.data?.detail || 'Could not create interviewer'));
     } finally {
       setCreatingInterviewer(false);
     }
@@ -179,7 +179,7 @@ export default function InterviewDashboard() {
       setShowInterviewerDetailsModal(false);
       setPendingDeleteInterviewer(null);
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Could not delete interviewer');
+      toast.error(err.isNetworkError ? err.message : (err.response?.data?.detail || 'Could not delete interviewer'));
     } finally {
       setDeletingInterviewer(false);
     }
@@ -195,7 +195,7 @@ export default function InterviewDashboard() {
       fetchCandidates();
       setCandidateToDelete(null);
     } catch (err) {
-      toast.error('Error deleting candidate');
+      toast.error(err.isNetworkError ? err.message : 'Error deleting candidate');
     }
   };
 

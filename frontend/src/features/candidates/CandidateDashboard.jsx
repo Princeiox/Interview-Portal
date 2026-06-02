@@ -155,7 +155,7 @@ export default function CandidateDashboard() {
       setCandidates(sorted);
     } catch (err) {
       console.error('Failed to fetch candidates', err);
-      toast.error('Failed to load candidates');
+      toast.error(err.isNetworkError ? err.message : 'Failed to load candidates');
     }
   };
 
@@ -178,7 +178,7 @@ export default function CandidateDashboard() {
       fetchCandidates();
     } catch (err) {
       console.error('Failed to assign interviewer', err);
-      toast.error('Failed to assign interviewer');
+      toast.error(err.isNetworkError ? err.message : 'Failed to assign interviewer');
     }
   };
 

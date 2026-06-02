@@ -18,7 +18,12 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        if (typeof response.data === 'string' && response.data.trim().startsWith('<')) {
+            return Promise.reject(new Error('Server is unreachable (Received HTML)'));
+        }
+        return response;
+    },
     (error) => {
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
@@ -26,6 +31,12 @@ api.interceptors.response.use(
                 window.location.replace('/login');
             }
         }
+        
+        if (!error.response || error.code === 'ERR_NETWORK') {
+            error.isNetworkError = true;
+            error.message = 'Unable to connect to the server. Please check your internet connection.';
+        }
+        
         return Promise.reject(error);
     }
 );

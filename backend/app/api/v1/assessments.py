@@ -117,3 +117,33 @@ def update_assessment(
     db.commit()
     db.refresh(assessment)
     return assessment
+
+
+@router.delete("/{assessment_id}")
+def delete_assessment(
+    assessment_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+):
+    """Delete a tech assessment."""
+    assessment = db.query(models.Assessment).filter(models.Assessment.id == assessment_id).first()
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+        
+    if assessment.assessment_type != models.AssessmentType.TECH:
+        raise HTTPException(status_code=403, detail="Only Tech assessments can be deleted.")
+    
+    # Authorization check
+    current_role_str = str(current_user.role).upper()
+    is_admin_or_hr = "ADMIN" in current_role_str or "HR" in current_role_str
+    is_owner = assessment.interviewer_id == current_user.id
+    
+    if not (is_admin_or_hr or is_owner):
+        raise HTTPException(
+            status_code=403, 
+            detail="Access Denied: You can only delete assessments that you have personally created."
+        )
+
+    db.delete(assessment)
+    db.commit()
+    return {"message": "Assessment deleted successfully"}
