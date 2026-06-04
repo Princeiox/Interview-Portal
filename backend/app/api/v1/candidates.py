@@ -13,6 +13,29 @@ from app import models, schemas
 from app.db.database import get_db
 from app.api.deps import get_current_active_user, get_admin_user
 from app.core.config import settings
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import asyncio
+
+async def send_email_async(to_email: str, subject: str, body: str):
+    def _send():
+        if not settings.SMTP_HOST or not settings.SMTP_USER or not settings.SMTP_PASSWORD:
+            raise ValueError("SMTP credentials not configured in environment.")
+            
+        msg = MIMEMultipart()
+        msg['From'] = settings.FROM_EMAIL
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
+        
+        server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT)
+        server.starttls()
+        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        
+    await asyncio.to_thread(_send)
 
 router = APIRouter()
 
@@ -409,3 +432,23 @@ def delete_candidate(
     db.delete(candidate)
     db.commit()
     return {"detail": "Candidate deleted"}
+
+@router.post("/{candidate_id}/send-email")
+async def send_email_to_candidate(
+    candidate_id: int,
+    request: schemas.EmailSendRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+):
+    """
+    Send an email to a candidate.
+    """
+    candidate = db.query(models.Candidate).filter(models.Candidate.id == candidate_id).first()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+        
+    try:
+        await send_email_async(candidate.email, request.subject, request.body)
+        return {"detail": "Email sent successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")

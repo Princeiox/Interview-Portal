@@ -84,6 +84,7 @@ export default function CandidateDetail() {
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const [assessmentType, setAssessmentType] = useState('Tech Round');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const [editingAssessment, setEditingAssessment] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isCompareMode, setIsCompareMode] = useState(false);
@@ -117,6 +118,17 @@ export default function CandidateDetail() {
     };
     load();
   }, [id, fetchCandidate, fetchAssessments]);
+
+  useEffect(() => {
+    if (showAssessmentModal || showPhotoModal || showEmailModal || showDeleteConfirm) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAssessmentModal, showPhotoModal, showEmailModal, showDeleteConfirm]);
 
   const handleSaveAssessment = async (fd) => {
     try {
@@ -214,6 +226,7 @@ export default function CandidateDetail() {
         )}
         <button className="btn btn-primary btn-sm" onClick={() => openAssessmentModal('Tech Round')}><Plus size={14} /> Tech Round</button>
         <button className="btn btn-outline btn-sm" onClick={() => openAssessmentModal('HR Round')}><Plus size={14} /> HR Round</button>
+        <button className="btn btn-outline btn-sm" onClick={() => setShowEmailModal(true)}><Mail size={14} /> Send Mail</button>
         <button className="btn btn-outline btn-sm" onClick={() => navigate(`/apply/${id}`)}><Pencil size={14} /> Edit Details</button>
         {user?.role === 'ADMIN' && (
           <button 
@@ -222,8 +235,7 @@ export default function CandidateDetail() {
             style={{ 
               backgroundColor: 'var(--color-error)', 
               color: 'white', 
-              borderColor: 'var(--color-error)',
-              marginLeft: 'auto'
+              borderColor: 'var(--color-error)'
             }}
           >
             <Trash2 size={14} /> Delete Candidate
@@ -740,9 +752,7 @@ export default function CandidateDetail() {
                     {r.comments && <div className="assessment-remarks-box bordered"><span className="remarks-label">COMMENTS</span><p className="comments-text">{r.comments}</p></div>}
                     <div className="card-footer-actions">
                       <button className="btn btn-outline btn-sm" onClick={() => openAssessmentModal(null, a)}><Pencil size={12} /> Edit Assessment</button>
-                      {a.assessment_type === 'Tech Round' && (
-                        <button className="btn btn-outline btn-sm" style={{ color: 'var(--color-error)', borderColor: 'var(--color-error)' }} onClick={() => handleDeleteAssessment(a.id)}><Trash2 size={12} /> Delete</button>
-                      )}
+                      <button className="btn btn-outline btn-sm" style={{ color: 'var(--color-error)', borderColor: 'var(--color-error)' }} onClick={() => handleDeleteAssessment(a.id)}><Trash2 size={12} /> Delete</button>
                     </div>
                   </div>
                 );
@@ -787,6 +797,14 @@ export default function CandidateDetail() {
             <img src={photoUrl} alt="Candidate" className="full-view-photo" />
           </div>
         </div>
+      )}
+
+      {showEmailModal && (
+        <EmailModal 
+          isOpen={showEmailModal} 
+          onClose={() => setShowEmailModal(false)} 
+          candidate={candidate} 
+        />
       )}
     </div>
   );
@@ -910,5 +928,115 @@ function AssessmentForm({ type, initialData, onSubmit, currentUser }) {
 
       <button type="submit" className="btn btn-primary btn-block" style={{ padding: '16px' }}>Submit Assessment</button>
     </form>
+  );
+}
+
+/**
+ * ── SUB-COMPONENT: EmailModal ─────────────────────────────────────────────
+ */
+function EmailModal({ isOpen, onClose, candidate }) {
+  const toast = useToast();
+  const [date, setDate] = useState('');
+  const [subject, setSubject] = useState('Interview Invitation');
+  const [body, setBody] = useState('');
+  const [templateType, setTemplateType] = useState('Default');
+
+  const getTemplate = (type, dateStr, candName) => {
+    const formattedDate = dateStr ? new Date(dateStr).toLocaleString('en-IN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : '[Select a Date]';
+
+    const baseTemplate = `Dear ${candName || 'Candidate'},\n\nCongratulations! 🎉 Your interview has been scheduled with Eulogik.\n\nDetails are as follows:\n\nDate & Time: ${formattedDate}\nLocation: Eulogik, 27 Noble Plaza, Zone-II, Maharana Pratap Nagar, Bhopal, Madhya Pradesh – 462011\n*Google Maps: https://maps.google.com/maps?cid=8753897592713204658\n\nImportant Instructions:\n\n1. Please report on time with your CV and a passport-size photo.\n2. If required, you may call on our landline number during working hours only.\n3. The location is easily available on Google Maps – kindly avoid calling us for navigation.\n4. If the given schedule doesn’t suit you, you may request one-time rescheduling through the invitation.\n5. We value your and our time – ensure you reach on time without fail.\n\nWe wish you all the very best!\n\nBest regards,\nEulogik`;
+    
+    if (type === 'Tech Round') {
+      return {
+        subject: 'Technical Interview Scheduled – Eulogik',
+        body: baseTemplate.replace('Your interview has been scheduled', 'Your technical interview has been scheduled')
+      };
+    } else if (type === 'HR Round') {
+      return {
+        subject: 'HR Interview Scheduled – Eulogik',
+        body: baseTemplate.replace('Your interview has been scheduled', 'Your HR interview has been scheduled')
+      };
+    }
+    
+    // Default
+    return {
+      subject: 'Interview Scheduled – Eulogik',
+      body: baseTemplate
+    };
+  };
+
+  useEffect(() => {
+    if (candidate) {
+      const { subject, body } = getTemplate(templateType, date, candidate.full_name);
+      setSubject(subject);
+      setBody(body);
+    }
+  }, [candidate, templateType]);
+
+  const handleDateChange = (e) => {
+    const newDate = e.target.value;
+    setDate(newDate);
+    const { subject, body } = getTemplate(templateType, newDate, candidate?.full_name);
+    setSubject(subject);
+    setBody(body);
+  };
+
+  const handleTemplateChange = (e) => {
+    const type = e.target.value;
+    setTemplateType(type);
+  };
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post(`/candidates/${candidate.id}/send-email`, { subject, body });
+      toast.success('Email sent successfully');
+      onClose();
+    } catch (err) {
+      toast.error(err.isNetworkError ? err.message : (err.response?.data?.detail || 'Failed to send email'));
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '90%' }}>
+        <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ margin: 0 }}>Send Email to {candidate.full_name}</h3>
+          <X size={20} onClick={onClose} style={{ cursor: 'pointer', color: 'var(--color-text-secondary)' }} />
+        </div>
+        <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="form-group">
+            <label className="form-label">Email Template</label>
+            <select className="form-input" value={templateType} onChange={handleTemplateChange}>
+              <option value="Default">Default Invitation</option>
+              <option value="Tech Round">Technical Interview</option>
+              <option value="HR Round">HR Interview</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Interview Date & Time (Optional)</label>
+            <input type="datetime-local" className="form-input" value={date} onChange={handleDateChange} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Subject</label>
+            <input required className="form-input" value={subject} onChange={e => setSubject(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Message Body</label>
+            <textarea required className="form-textarea" rows={10} value={body} onChange={e => setBody(e.target.value)} style={{ width: '100%' }} />
+          </div>
+          <button type="submit" className="btn btn-primary btn-block" style={{ padding: '12px', marginTop: '8px' }}>Send Email</button>
+        </form>
+      </div>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 .detail-page {
   min-height: 100vh;
   background: var(--color-bg);
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 24px 60px;
 }
@@ -40,7 +40,33 @@
   display: flex;
   gap: 10px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.detail-actions::-webkit-scrollbar {
+  height: 4px;
+}
+
+.detail-actions::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.detail-actions::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.detail-actions > button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.detail-actions::after {
+  content: "";
+  flex: 0 0 24px;
 }
 
 .detail-content {

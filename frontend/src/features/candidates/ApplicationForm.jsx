@@ -565,7 +565,7 @@ export default function ApplicationForm() {
                 required
               >
                 <option value="">Select position</option>
-                {['Software Engineer', 'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'UI/UX Designer', 'QA Engineer', 'DevOps Engineer', 'Product Manager', 'Marketing Intern', 'HR', 'HR Intern', 'Python Developer', 'SDE Intern'].map(p => <option key={p} value={p}>{p}</option>)}
+                {['Software Engineer', 'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'UI/UX Designer', 'QA Engineer', 'DevOps Engineer', 'Product Manager', 'Marketing Intern', 'HR Executive', 'HR Intern', 'Python Developer', 'SDE Intern', 'Social Media and Marketing', 'Front Desk Office'].map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
             <div style={{ margin: '20px 0 0', display: 'flex', alignItems: 'center', gap: '8px' }}>

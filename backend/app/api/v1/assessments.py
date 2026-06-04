@@ -43,7 +43,7 @@ def create_assessment(
     elif rec in ["Next Round", "Interview"]:
         candidate.status = models.CandidateStatus.INTERVIEW
     elif rec in ["On Hold", "Waitlist"]:
-        candidate.status = models.CandidateStatus.SCREENING
+        candidate.status = models.CandidateStatus.ON_HOLD
 
     # Unassign the interviewer after a round is submitted so a new one can be assigned for the next round
     candidate.interviewer_id = None
@@ -112,7 +112,7 @@ def update_assessment(
         elif rec in ["Next Round", "Interview"]:
             candidate.status = models.CandidateStatus.INTERVIEW
         elif rec in ["On Hold", "Waitlist"]:
-            candidate.status = models.CandidateStatus.SCREENING
+            candidate.status = models.CandidateStatus.ON_HOLD
 
     db.commit()
     db.refresh(assessment)
@@ -130,8 +130,7 @@ def delete_assessment(
     if not assessment:
         raise HTTPException(status_code=404, detail="Assessment not found")
         
-    if assessment.assessment_type != models.AssessmentType.TECH:
-        raise HTTPException(status_code=403, detail="Only Tech assessments can be deleted.")
+
     
     # Authorization check
     current_role_str = str(current_user.role).upper()

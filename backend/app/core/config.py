@@ -36,7 +36,7 @@ class Settings:
     # JWT
     SECRET_KEY: str = os.getenv("SECRET_KEY", "change-me-in-production")
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 525600  # 1 year (365 days)
 
     # Uploads
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "uploads")
@@ -47,6 +47,13 @@ class Settings:
         "BACKEND_CORS_ORIGIN_REGEX",
         r"https://.*\.vercel\.app",
     )
+
+    # Email
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", 587))
+    SMTP_USER: str = os.getenv("SMTP_USER", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    FROM_EMAIL: str = os.getenv("FROM_EMAIL", SMTP_USER)
 
 
 settings = Settings()

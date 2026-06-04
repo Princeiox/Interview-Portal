@@ -150,6 +150,11 @@ class CandidateUpdate(BaseModel):
     status: Optional[CandidateStatus] = None
     interviewer_id: Optional[int] = None
 
+class EmailSendRequest(BaseModel):
+    """Schema for sending an email to a candidate."""
+    subject: str
+    body: str
+
 # ── Assessment ────────────────────────────────────────────────────────────
 
 class AssessmentCreate(BaseModel):
