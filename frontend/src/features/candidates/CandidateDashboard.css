@@ -278,7 +278,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
+
   .dashboard-count {
     /* Maintained for mobile */
   }
@@ -326,6 +326,7 @@
   .candidate-card {
     padding: 16px;
   }
+
   .candidate-card-top {
     flex-wrap: wrap;
     gap: 12px;
@@ -402,7 +403,3 @@
 .hr-done svg {
   color: #db2777 !important;
 }
-
-
-
-

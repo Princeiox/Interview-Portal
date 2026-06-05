@@ -16,16 +16,17 @@ import './CandidateDetail.css';
  */
 const STATUS_OPTIONS = ['Applied', 'Screening', 'Interview', 'HR Round', 'On Hold', 'Offered', 'Hired', 'Rejected'];
 const COMMON_SKILLS = ['Python', 'SQL', 'Fastapi', 'React', 'Node.js', 'AWS'];
-const RECOMMENDATION_LABELS = { 
-  'Hire': 'Hired', 
-  'Reject': 'Rejected', 
+const HR_COMMON_SKILLS = ['Communication Skills', 'Confidence', 'Positive Attitude', 'Teamwork', 'Problem-Solving Ability', 'Adaptability', 'Professionalism', 'Cultural Fit', 'Career Motivation', 'Leadership Potential'];
+const RECOMMENDATION_LABELS = {
+  'Hire': 'Hired',
+  'Reject': 'Rejected',
   'Next Round': 'On Hold',
   'On Hold': 'On Hold',
   'HR Round': 'HR Round'
 };
-const RECOMMENDATION_BADGES = { 
-  'Hire': 'badge-hired', 
-  'Reject': 'badge-rejected', 
+const RECOMMENDATION_BADGES = {
+  'Hire': 'badge-hired',
+  'Reject': 'badge-rejected',
   'Next Round': 'badge-screening',
   'On Hold': 'badge-on-hold',
   'HR Round': 'badge-interview'
@@ -35,15 +36,15 @@ const RECOMMENDATION_BADGES = {
  * ── HELPERS ───────────────────────────────────────────────────────────────
  */
 const getStatusBadgeClass = (s) => {
-  const m = { 
-    Applied: 'badge-applied', 
-    Screening: 'badge-screening', 
-    Interview: 'badge-interview', 
-    'HR Round': 'badge-hr-round', 
+  const m = {
+    Applied: 'badge-applied',
+    Screening: 'badge-screening',
+    Interview: 'badge-interview',
+    'HR Round': 'badge-hr-round',
     'On Hold': 'badge-on-hold',
-    Offered: 'badge-offered', 
-    Hired: 'badge-hired', 
-    Rejected: 'badge-rejected' 
+    Offered: 'badge-offered',
+    Hired: 'badge-hired',
+    Rejected: 'badge-rejected'
   };
   return m[s] || 'badge-applied';
 };
@@ -217,24 +218,24 @@ export default function CandidateDetail() {
 
       <div className="detail-actions">
         {cvUrl && (
-          <button 
-            className={`btn ${isCompareMode ? 'btn-primary font-bold' : 'btn-outline'} btn-sm`} 
+          <button
+            className={`btn ${isCompareMode ? 'btn-primary font-bold' : 'btn-outline'} btn-sm`}
             onClick={() => setIsCompareMode(!isCompareMode)}
           >
             <Columns size={14} style={{ marginRight: '6px' }} /> {isCompareMode ? 'Exit Split View' : 'Split Compare View'}
           </button>
         )}
-        <button className="btn btn-primary btn-sm" onClick={() => openAssessmentModal('Tech Round')}><Plus size={14} /> Tech Round</button>
+        <button className="btn btn-outline btn-sm" onClick={() => openAssessmentModal('Tech Round')}><Plus size={14} /> Tech Round</button>
         <button className="btn btn-outline btn-sm" onClick={() => openAssessmentModal('HR Round')}><Plus size={14} /> HR Round</button>
         <button className="btn btn-outline btn-sm" onClick={() => setShowEmailModal(true)}><Mail size={14} /> Send Mail</button>
         <button className="btn btn-outline btn-sm" onClick={() => navigate(`/apply/${id}`)}><Pencil size={14} /> Edit Details</button>
         {user?.role === 'ADMIN' && (
-          <button 
-            className="btn btn-danger btn-sm" 
+          <button
+            className="btn btn-danger btn-sm"
             onClick={() => setShowDeleteConfirm(true)}
-            style={{ 
-              backgroundColor: 'var(--color-error)', 
-              color: 'white', 
+            style={{
+              backgroundColor: 'var(--color-error)',
+              color: 'white',
               borderColor: 'var(--color-error)'
             }}
           >
@@ -243,7 +244,7 @@ export default function CandidateDetail() {
         )}
       </div>
 
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={handleDeleteCandidate}
@@ -434,7 +435,7 @@ export default function CandidateDetail() {
             {activeTab === 'assessments' && (
               <div className="stagger-children">
                 {assessments.length === 0 ? <div className="empty-state"><p>No assessments yet</p></div> : assessments.map(a => {
-                  let r = {}; try { r = a.remarks ? (a.remarks.startsWith('{') ? JSON.parse(a.remarks) : { comments: a.remarks }) : {}; } catch(e) { r = { comments: a.remarks }; }
+                  let r = {}; try { r = a.remarks ? (a.remarks.startsWith('{') ? JSON.parse(a.remarks) : { comments: a.remarks }) : {}; } catch (e) { r = { comments: a.remarks }; }
                   const s = r.detailedStars || {};
                   return (
                     <div key={a.id} className="profile-section assessment-result-card">
@@ -445,7 +446,7 @@ export default function CandidateDetail() {
                           <StarRating rating={a.overall_score / 2} size={14} cursor="default" />
                         </div>
                       </div>
-                      
+
                       {r.customSkills?.length > 0 && (
                         <div className="assessment-remarks-box">
                           <span className="remarks-label">TECHNICAL SKILLS</span>
@@ -476,9 +477,9 @@ export default function CandidateDetail() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg)' }}>
               <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }}>Curriculum Vitae</span>
               {cvUrl && (
-                <button 
-                  onClick={() => window.open(cvUrl, '_blank')} 
-                  className="btn btn-outline btn-sm" 
+                <button
+                  onClick={() => window.open(cvUrl, '_blank')}
+                  className="btn btn-outline btn-sm"
                   style={{ padding: '4px 10px', fontSize: '0.75rem' }}
                 >
                   Open in New Tab
@@ -487,9 +488,9 @@ export default function CandidateDetail() {
             </div>
             {cvUrl ? (
               isPdf ? (
-                <iframe 
-                  src={`${cvUrl}#toolbar=1&navpanes=0`} 
-                  title="CV Preview Compare" 
+                <iframe
+                  src={`${cvUrl}#toolbar=1&navpanes=0`}
+                  title="CV Preview Compare"
                   className="compare-cv-iframe"
                 />
               ) : (
@@ -517,18 +518,18 @@ export default function CandidateDetail() {
                 </div>
                 <div className="profile-section" style={{ display: 'flex', flexDirection: 'column' }}>
                   <h3 className="section-title">Curriculum Vitae</h3>
-                  <div 
-                    className="cv-container" 
-                    style={{ 
-                      border: '1px solid var(--color-border)', 
-                      borderRadius: '8px', 
-                      flex: 1, 
-                      minHeight: '340px', 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      background: 'var(--color-surface)', 
+                  <div
+                    className="cv-container"
+                    style={{
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '8px',
+                      flex: 1,
+                      minHeight: '340px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'var(--color-surface)',
                       padding: cvUrl && isPdf ? '16px' : '24px',
                       overflow: 'hidden'
                     }}
@@ -536,16 +537,16 @@ export default function CandidateDetail() {
                     {cvUrl ? (
                       isPdf ? (
                         <div style={{ display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center' }}>
-                          <iframe 
-                            src={`${cvUrl}#toolbar=0&navpanes=0`} 
-                            title="CV Preview" 
-                            width="100%" 
-                            height="260px" 
+                          <iframe
+                            src={`${cvUrl}#toolbar=0&navpanes=0`}
+                            title="CV Preview"
+                            width="100%"
+                            height="260px"
                             style={{ border: 'none', borderRadius: '8px' }}
                           />
-                          <button 
-                            onClick={() => window.open(cvUrl, '_blank')} 
-                            className="btn btn-primary btn-sm" 
+                          <button
+                            onClick={() => window.open(cvUrl, '_blank')}
+                            className="btn btn-primary btn-sm"
                             style={{ marginTop: '14px', width: 'auto', padding: '6px 16px' }}
                           >
                             Open CV in New Tab
@@ -586,7 +587,7 @@ export default function CandidateDetail() {
                       <a href={`mailto:${candidate.email}`} className="contact-link" style={{ fontSize: '0.95rem' }}>{candidate.email}</a>
                     </div>
                   </div>
-                  
+
                   <div className="contact-row" style={{ alignItems: 'flex-start' }}>
                     <Phone className="contact-icon" />
                     <div>
@@ -626,7 +627,7 @@ export default function CandidateDetail() {
                   <div className="info-item">
                     <span className="info-label">NOTICE PERIOD</span>
                     <span className="info-value">
-                      {candidate.notice_period 
+                      {candidate.notice_period
                         ? (isNaN(candidate.notice_period) ? candidate.notice_period : `${candidate.notice_period} days`)
                         : 'N/A'}
                     </span>
@@ -720,7 +721,7 @@ export default function CandidateDetail() {
           {activeTab === 'assessments' && (
             <div className="stagger-children">
               {assessments.length === 0 ? <div className="empty-state"><p>No assessments yet</p></div> : assessments.map(a => {
-                let r = {}; try { r = a.remarks ? (a.remarks.startsWith('{') ? JSON.parse(a.remarks) : { comments: a.remarks }) : {}; } catch(e) { r = { comments: a.remarks }; }
+                let r = {}; try { r = a.remarks ? (a.remarks.startsWith('{') ? JSON.parse(a.remarks) : { comments: a.remarks }) : {}; } catch (e) { r = { comments: a.remarks }; }
                 const s = r.detailedStars || {};
                 return (
                   <div key={a.id} className="profile-section assessment-result-card">
@@ -731,7 +732,7 @@ export default function CandidateDetail() {
                         <StarRating rating={a.overall_score / 2} size={14} cursor="default" />
                       </div>
                     </div>
-                    
+
                     {/* Technical Skills - Reordered above comments as per request */}
                     {r.customSkills?.length > 0 && (
                       <div className="assessment-remarks-box">
@@ -786,8 +787,8 @@ export default function CandidateDetail() {
           <div className="modal-content photo-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Candidate Photo</h3>
-              <button 
-                className="modal-close-btn" 
+              <button
+                className="modal-close-btn"
                 onClick={() => setShowPhotoModal(false)}
                 aria-label="Close"
               >
@@ -800,10 +801,10 @@ export default function CandidateDetail() {
       )}
 
       {showEmailModal && (
-        <EmailModal 
-          isOpen={showEmailModal} 
-          onClose={() => setShowEmailModal(false)} 
-          candidate={candidate} 
+        <EmailModal
+          isOpen={showEmailModal}
+          onClose={() => setShowEmailModal(false)}
+          candidate={candidate}
         />
       )}
     </div>
@@ -832,10 +833,10 @@ function AssessmentForm({ type, initialData, onSubmit, currentUser }) {
         setOverall(initialData.overall_score / 2 || 0);
         const rec = initialData.recommendation;
         setDecision(
-          rec === 'Hire' || rec === 'Hired' ? 'Hired' : 
-          rec === 'Reject' || rec === 'Rejected' ? 'Rejected' : 
-          rec === 'HR Round' ? 'HR Round' : 
-          rec === 'On Hold' || rec === 'Next Round' ? 'On Hold' : ''
+          rec === 'Hire' || rec === 'Hired' ? 'Hired' :
+            rec === 'Reject' || rec === 'Rejected' ? 'Rejected' :
+              rec === 'HR Round' ? 'HR Round' :
+                rec === 'On Hold' || rec === 'Next Round' ? 'On Hold' : ''
         );
       } catch (e) { console.error(e); }
     } else if (currentUser) {
@@ -872,7 +873,7 @@ function AssessmentForm({ type, initialData, onSubmit, currentUser }) {
       <section style={{ padding: '24px', border: '1px solid var(--color-border)', borderRadius: '12px' }}>
         <h4 style={{ marginBottom: '20px', fontWeight: 600 }}>Foundational Assessment</h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {[ { k: 'education', l: 'Academic Standing' }, { k: 'relevance', l: 'Relevant Experience' }, { k: 'attitude', l: 'Attitude' }, { k: 'personality', l: 'Culture Fit' }, { k: 'comprehension', l: 'Analytical' }, { k: 'communication', l: 'Communication' }, { k: 'technical', l: 'Job Knowledge' } ].map(i => (
+          {[{ k: 'education', l: 'Academic Standing' }, { k: 'relevance', l: 'Relevant Experience' }, { k: 'attitude', l: 'Attitude' }, { k: 'personality', l: 'Culture Fit' }, { k: 'comprehension', l: 'Analytical' }, { k: 'communication', l: 'Communication' }, { k: 'technical', l: 'Job Knowledge' }].map(i => (
             <div key={i.k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>{i.l}</span>
               <StarRating rating={stars[i.k]} setRating={v => setStars({ ...stars, [i.k]: v })} />
@@ -883,11 +884,11 @@ function AssessmentForm({ type, initialData, onSubmit, currentUser }) {
 
       <section style={{ padding: '24px', border: '1px solid var(--color-border)', borderRadius: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <h4 style={{ fontWeight: 600 }}>Technical Skills</h4>
+          <h4 style={{ fontWeight: 600 }}>{type === 'HR Round' ? 'Skills' : 'Technical Skills'}</h4>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => setCustomSkills([...customSkills, { name: '', rating: 0 }])}>+ Add Skill</button>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
-          {COMMON_SKILLS.map(s => <button key={s} type="button" className="suggestion-pill" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => !customSkills.some(x => x.name === s) && setCustomSkills([...customSkills, { name: s, rating: 0 }])}>+ {s}</button>)}
+          {(type === 'HR Round' ? HR_COMMON_SKILLS : COMMON_SKILLS).map(s => <button key={s} type="button" className="suggestion-pill" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => !customSkills.some(x => x.name === s) && setCustomSkills([...customSkills, { name: s, rating: 0 }])}>+ {s}</button>)}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {customSkills.map((sk, i) => (
@@ -913,8 +914,8 @@ function AssessmentForm({ type, initialData, onSubmit, currentUser }) {
           <div>
             <label className="form-label">Verdict *</label>
             <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
-              {(type === 'Tech Round' 
-                ? ['Rejected', 'On Hold', 'HR Round'] 
+              {(type === 'Tech Round'
+                ? ['Rejected', 'On Hold', 'HR Round']
                 : ['Rejected', 'On Hold', 'Hired']
               ).map(s => (
                 <label key={s} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
@@ -954,7 +955,7 @@ function EmailModal({ isOpen, onClose, candidate }) {
     }) : '[Select a Date]';
 
     const baseTemplate = `Dear ${candName},\n\nCongratulations! 🎉 Your interview has been scheduled with Eulogik.\n\nDetails are as follows:\n\nDate & Time: ${formattedDate}\nLocation: Eulogik, 27 Noble Plaza, Zone-II, Maharana Pratap Nagar, Bhopal, Madhya Pradesh – 462011\n*Google Maps: https://maps.google.com/maps?cid=8753897592713204658\n\nImportant Instructions:\n\n1. Please report on time with your CV and a passport-size photo.\n2. If required, you may call on our landline number during working hours only.\n3. The location is easily available on Google Maps – kindly avoid calling us for navigation.\n4. If the given schedule doesn’t suit you, you may request one-time rescheduling through the invitation.\n5. We value your and our time – ensure you reach on time without fail.\n\nWe wish you all the very best!\n\nBest regards,\nEulogik`;
-    
+
     if (type === 'Tech Round') {
       return {
         subject: 'Technical Interview Scheduled – Eulogik',
@@ -971,7 +972,7 @@ function EmailModal({ isOpen, onClose, candidate }) {
         body: `Dear ${candName},\n\nThank you for taking the time to interview with us for the ${candPosition} role and for your interest in joining our organization.\n\nWe appreciate the opportunity to learn more about your skills, experience, and career aspirations. After careful consideration of all candidates, we have decided to move forward with another applicant whose qualifications more closely match our current requirements for this position.\n\nThis decision was not easy, as we were impressed by many aspects of your profile. We encourage you to apply for future opportunities that align with your skills and experience.\n\nWe sincerely thank you for your interest in our company and the time you invested throughout the selection process. We wish you every success in your career and future endeavors.\n\nKind regards,\nEulogik`
       };
     }
-    
+
     // Default
     return {
       subject: 'Interview Scheduled – Eulogik',
