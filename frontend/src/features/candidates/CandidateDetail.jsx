@@ -1,3 +1,10 @@
+/**
+ * CandidateDetail Component
+ * 
+ * Displays the comprehensive profile of a single candidate, including personal information,
+ * uploaded resumes, and assessment history. Allows HR/Admins to update the candidate status,
+ * schedule interview rounds, send emails, and conduct split-view comparisons.
+ */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api, { API_BASE } from '@/api/axios';

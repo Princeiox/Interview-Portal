@@ -1,3 +1,10 @@
+/**
+ * Axios API Configuration
+ * 
+ * Sets up the base Axios instance for all HTTP requests to the backend.
+ * Includes request interceptors for attaching JWT auth tokens and 
+ * response interceptors for handling 401 Unauthorized errors and network failures globally.
+ */
 import axios from 'axios';
 
 const API = import.meta.env.VITE_API_URL ?? "";

@@ -80,9 +80,6 @@ copy .env.example .env         # Windows
 # cp .env.example .env         # macOS/Linux
 # Then edit .env with your PostgreSQL credentials
 
-# Initialize the database and create an admin user
-python create_admin.py
-
 # Start the server
 uvicorn app.main:app --reload
 ```
@@ -115,6 +112,11 @@ npm run dev
 | `UPLOAD_DIR` | Directory for file uploads | `uploads` |
 | `FRONTEND_URL` | Frontend URL for CORS | `http://localhost:5173` |
 | `BACKEND_CORS_ORIGINS` | (Optional) Explicit CORS origins | `https://app.com,https://www.app.com` |
+| `SMTP_HOST` | SMTP server host for sending emails | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP server port | `587` |
+| `SMTP_USER` | Email address for SMTP auth | `careers@eulogik.com` |
+| `SMTP_PASSWORD` | App password or SMTP password | `your-app-password` |
+| `FROM_EMAIL` | Sender name and email address | `"Eulogik Careers" <careers@eulogik.com>` |
 
 ### Frontend (`frontend/.env`)
 

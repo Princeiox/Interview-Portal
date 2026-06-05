@@ -1,3 +1,10 @@
+/**
+ * App Component
+ * 
+ * Main entry point for the Interview Portal React application.
+ * Defines the routing structure and integrates ProtectedRoute logic 
+ * to ensure secure, role-based access to the dashboard and interview portals.
+ */
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
