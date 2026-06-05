@@ -124,10 +124,6 @@ npm run dev
 
 > **Production tip:** Change `FRONTEND_URL` in the backend `.env` and `VITE_API_URL` in the frontend `.env` to your production URLs.
 
-## 🔐 Default Credentials
-
-- **Email**: `Admin@eulogik.com`
-- **Password**: `Eulogik123`
 
 ## 🌐 URLs (Local Development)
 
