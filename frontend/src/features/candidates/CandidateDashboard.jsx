@@ -290,14 +290,14 @@ export default function CandidateDashboard() {
         </div>
 
         <div className="filter-group">
-          <Filter size={16} />
+          <Filter size={16} className="filter-icon" />
           <select id="filter-status" className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
 
         <div className="filter-group">
-          <LayoutGrid size={16} />
+          <LayoutGrid size={16} className="filter-icon" />
           <select id="filter-position" className="filter-select" value={positionFilter} onChange={(e) => setPositionFilter(e.target.value)}>
             <option value="All Positions">All Positions</option>
             {positions.map((p) => <option key={p} value={p}>{p}</option>)}

@@ -941,7 +941,9 @@ function EmailModal({ isOpen, onClose, candidate }) {
   const [body, setBody] = useState('');
   const [templateType, setTemplateType] = useState('Default');
 
-  const getTemplate = (type, dateStr, candName) => {
+  const getTemplate = (type, dateStr, candObj) => {
+    const candName = candObj?.full_name || 'Candidate';
+    const candPosition = candObj?.position_applied || '[Position Name]';
     const formattedDate = dateStr ? new Date(dateStr).toLocaleString('en-IN', {
       weekday: 'long',
       year: 'numeric',
@@ -951,7 +953,7 @@ function EmailModal({ isOpen, onClose, candidate }) {
       minute: '2-digit'
     }) : '[Select a Date]';
 
-    const baseTemplate = `Dear ${candName || 'Candidate'},\n\nCongratulations! 🎉 Your interview has been scheduled with Eulogik.\n\nDetails are as follows:\n\nDate & Time: ${formattedDate}\nLocation: Eulogik, 27 Noble Plaza, Zone-II, Maharana Pratap Nagar, Bhopal, Madhya Pradesh – 462011\n*Google Maps: https://maps.google.com/maps?cid=8753897592713204658\n\nImportant Instructions:\n\n1. Please report on time with your CV and a passport-size photo.\n2. If required, you may call on our landline number during working hours only.\n3. The location is easily available on Google Maps – kindly avoid calling us for navigation.\n4. If the given schedule doesn’t suit you, you may request one-time rescheduling through the invitation.\n5. We value your and our time – ensure you reach on time without fail.\n\nWe wish you all the very best!\n\nBest regards,\nEulogik`;
+    const baseTemplate = `Dear ${candName},\n\nCongratulations! 🎉 Your interview has been scheduled with Eulogik.\n\nDetails are as follows:\n\nDate & Time: ${formattedDate}\nLocation: Eulogik, 27 Noble Plaza, Zone-II, Maharana Pratap Nagar, Bhopal, Madhya Pradesh – 462011\n*Google Maps: https://maps.google.com/maps?cid=8753897592713204658\n\nImportant Instructions:\n\n1. Please report on time with your CV and a passport-size photo.\n2. If required, you may call on our landline number during working hours only.\n3. The location is easily available on Google Maps – kindly avoid calling us for navigation.\n4. If the given schedule doesn’t suit you, you may request one-time rescheduling through the invitation.\n5. We value your and our time – ensure you reach on time without fail.\n\nWe wish you all the very best!\n\nBest regards,\nEulogik`;
     
     if (type === 'Tech Round') {
       return {
@@ -962,6 +964,11 @@ function EmailModal({ isOpen, onClose, candidate }) {
       return {
         subject: 'HR Interview Scheduled – Eulogik',
         body: baseTemplate.replace('Your interview has been scheduled', 'Your HR interview has been scheduled')
+      };
+    } else if (type === 'Rejection') {
+      return {
+        subject: `Update on your application for ${candPosition} at Eulogik`,
+        body: `Dear ${candName},\n\nThank you for taking the time to interview with us for the ${candPosition} role and for your interest in joining our organization.\n\nWe appreciate the opportunity to learn more about your skills, experience, and career aspirations. After careful consideration of all candidates, we have decided to move forward with another applicant whose qualifications more closely match our current requirements for this position.\n\nThis decision was not easy, as we were impressed by many aspects of your profile. We encourage you to apply for future opportunities that align with your skills and experience.\n\nWe sincerely thank you for your interest in our company and the time you invested throughout the selection process. We wish you every success in your career and future endeavors.\n\nKind regards,\nEulogik`
       };
     }
     
@@ -974,16 +981,16 @@ function EmailModal({ isOpen, onClose, candidate }) {
 
   useEffect(() => {
     if (candidate) {
-      const { subject, body } = getTemplate(templateType, date, candidate.full_name);
+      const { subject, body } = getTemplate(templateType, date, candidate);
       setSubject(subject);
       setBody(body);
     }
-  }, [candidate, templateType]);
+  }, [candidate, templateType, date]);
 
   const handleDateChange = (e) => {
     const newDate = e.target.value;
     setDate(newDate);
-    const { subject, body } = getTemplate(templateType, newDate, candidate?.full_name);
+    const { subject, body } = getTemplate(templateType, newDate, candidate);
     setSubject(subject);
     setBody(body);
   };
@@ -1020,12 +1027,15 @@ function EmailModal({ isOpen, onClose, candidate }) {
               <option value="Default">Default Invitation</option>
               <option value="Tech Round">Technical Interview</option>
               <option value="HR Round">HR Interview</option>
+              <option value="Rejection">Rejection</option>
             </select>
           </div>
-          <div className="form-group">
-            <label className="form-label">Interview Date & Time (Optional)</label>
-            <input type="datetime-local" className="form-input" value={date} onChange={handleDateChange} />
-          </div>
+          {templateType !== 'Rejection' && (
+            <div className="form-group">
+              <label className="form-label">Interview Date & Time (Optional)</label>
+              <input type="datetime-local" className="form-input" value={date} onChange={handleDateChange} />
+            </div>
+          )}
           <div className="form-group">
             <label className="form-label">Subject</label>
             <input required className="form-input" value={subject} onChange={e => setSubject(e.target.value)} />
