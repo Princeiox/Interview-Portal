@@ -332,7 +332,7 @@ export default function InterviewDashboard() {
             <div
               key={c.id}
               className="candidate-card card card-interactive"
-              onClick={() => window.open(`/candidates/${c.id}`, '_blank')}
+              onClick={() => navigate(`/candidates/${c.id}`, { state: { from: '/interview' } })}
             >
               <div className="candidate-card-top">
                 <div className="candidate-info">

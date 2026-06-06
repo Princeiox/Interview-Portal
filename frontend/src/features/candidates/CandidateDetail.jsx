@@ -6,7 +6,7 @@
  * schedule interview rounds, send emails, and conduct split-view comparisons.
  */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api, { API_BASE } from '@/api/axios';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -82,6 +82,7 @@ export default function CandidateDetail() {
   const { id: rawId } = useParams();
   const id = useMemo(() => rawId ? rawId.replace(/^:/, '') : null, [rawId]);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const toast = useToast();
 
@@ -97,7 +98,7 @@ export default function CandidateDetail() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isCompareMode, setIsCompareMode] = useState(false);
 
-  const dashboardPath = '/candidates';
+  const dashboardPath = location.state?.from || '/candidates';
   const isPrivileged = user?.role === 'ADMIN' || user?.role === 'HR';
 
   const fetchCandidate = useCallback(async () => {

@@ -104,6 +104,7 @@ class Candidate(Base):
 
     # Additional Context
     statement_of_purpose = Column(Text, nullable=True)
+    portfolio_links = Column(Text, nullable=True)
     hobbies = Column(String, nullable=True)
 
     # File Assets
