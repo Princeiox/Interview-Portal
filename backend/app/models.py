@@ -31,10 +31,8 @@ class CandidateStatus(str, enum.Enum):
 
 class AssessmentType(str, enum.Enum):
     """Categorizes the nature of an interview assessment round."""
-    TECH = "TECH"
-    HR = "HR"
-    TECH_ROUND = "Tech Round"
-    HR_ROUND = "HR Round"
+    TECH = "Tech Round"
+    HR = "HR Round"
 
 
 # --- Core Models ---
