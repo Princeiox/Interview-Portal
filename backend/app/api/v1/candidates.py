@@ -228,7 +228,26 @@ async def apply(
     Submit a new candidate application.
     This is a public endpoint used by candidates to apply for a position.
     """
-    from datetime import date as date_type
+    from datetime import date as date_type, datetime, timedelta, timezone
+
+    # Enforce constraint: candidate with same email, phone, and current address can only apply once a month
+    email_clean = email.strip()
+    phone_clean = phone.strip()
+    address_clean = current_address.strip() if current_address else ""
+    one_month_ago = datetime.now(timezone.utc) - timedelta(days=30)
+
+    existing_candidate = db.query(models.Candidate).filter(
+        models.Candidate.email.ilike(email_clean),
+        models.Candidate.phone == phone_clean,
+        models.Candidate.current_address == address_clean,
+        models.Candidate.applied_at >= one_month_ago
+    ).first()
+
+    if existing_candidate:
+        raise HTTPException(
+            status_code=400,
+            detail="We already have your application. Please try again after a few months."
+        )
 
     # Handle file uploads if provided
     photo_url = None

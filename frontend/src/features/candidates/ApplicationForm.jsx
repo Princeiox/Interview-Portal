@@ -39,6 +39,13 @@ export default function ApplicationForm() {
   const [ageWarning, setAgeWarning] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [refPhoneErrors, setRefPhoneErrors] = useState({});
+  const [fullNameError, setFullNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [expYearsError, setExpYearsError] = useState('');
+  const [expMonthsError, setExpMonthsError] = useState('');
+  const [currCtcError, setCurrCtcError] = useState('');
+  const [expCtcError, setExpCtcError] = useState('');
+  const [noticeError, setNoticeError] = useState('');
 
   const [form, setForm] = useState({
     full_name: '', email: '', phone: '', date_of_birth: '', gender: '', marital_status: '', nationality: '',
@@ -122,6 +129,25 @@ export default function ApplicationForm() {
   }, [id, isEditMode]);
 
   const updateForm = (key, val) => {
+    if (key === 'full_name') {
+      if (val && val.trim().length < 3) {
+        setFullNameError('Name must be at least 3 characters long');
+      } else if (val && /[^a-zA-Z\s.]/.test(val)) {
+        setFullNameError('Name should only contain letters, spaces, or dots');
+      } else {
+        setFullNameError('');
+      }
+    }
+
+    if (key === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (val && !emailRegex.test(val)) {
+        setEmailError('Please enter a valid email address');
+      } else {
+        setEmailError('');
+      }
+    }
+
     if (key === 'date_of_birth') {
       const age = calculateAge(val);
       if (val && age < 18) {
@@ -139,6 +165,36 @@ export default function ApplicationForm() {
       } else {
         setPhoneError('');
       }
+    }
+
+    if (key === 'experience_years') {
+      if (val && isNaN(val)) setExpYearsError('Experience must be a valid number');
+      else if (val < 0) setExpYearsError('Experience cannot be negative');
+      else setExpYearsError('');
+    }
+
+    if (key === 'experience_months') {
+      if (val && isNaN(val)) setExpMonthsError('Months must be a valid number');
+      else if (val < 0 || val > 11) setExpMonthsError('Months must be between 0 and 11');
+      else setExpMonthsError('');
+    }
+
+    if (key === 'current_ctc') {
+      if (val && isNaN(val)) setCurrCtcError('CTC must be a valid number (e.g. 5.5)');
+      else if (val && Number(val) < 0) setCurrCtcError('CTC must be a positive number');
+      else setCurrCtcError('');
+    }
+
+    if (key === 'expected_ctc') {
+      if (val && isNaN(val)) setExpCtcError('Expected CTC must be a valid number (e.g. 8.0)');
+      else if (val && Number(val) < 0) setExpCtcError('Expected CTC must be a positive number');
+      else setExpCtcError('');
+    }
+
+    if (key === 'notice_period') {
+      if (val && val !== 'Immediate' && isNaN(val)) setNoticeError('Notice period must be a valid number of days');
+      else if (val && val !== 'Immediate' && Number(val) < 0) setNoticeError('Notice period must be a positive number of days');
+      else setNoticeError('');
     }
 
     setForm((p) => {
@@ -168,8 +224,8 @@ export default function ApplicationForm() {
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 4 * 1024 * 1024) {
-        toast.error('Photo size must be less than 4MB');
+      if (file.size > 1.5 * 1024 * 1024) {
+        toast.error('Photo size must be less than 1.5MB');
         e.target.value = '';
         return;
       }
@@ -181,8 +237,8 @@ export default function ApplicationForm() {
   const handleCvChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 4 * 1024 * 1024) {
-        toast.error('CV/Resume size must be less than 4MB');
+      if (file.size > 1.5 * 1024 * 1024) {
+        toast.error('CV/Resume size must be less than 1.5MB');
         e.target.value = '';
         return;
       }
@@ -228,6 +284,16 @@ export default function ApplicationForm() {
     setLoading(true);
 
     try {
+      if (fullNameError) throw new Error(fullNameError);
+      if (emailError) throw new Error(emailError);
+      if (phoneError) throw new Error(phoneError);
+      if (ageWarning) throw new Error(ageWarning);
+      if (expYearsError) throw new Error(expYearsError);
+      if (expMonthsError) throw new Error(expMonthsError);
+      if (currCtcError) throw new Error(currCtcError);
+      if (expCtcError) throw new Error(expCtcError);
+      if (noticeError) throw new Error(noticeError);
+
       const fd = new FormData();
 
       // Basic fields
@@ -257,12 +323,52 @@ export default function ApplicationForm() {
         if (!edu.degree || !edu.institution || !edu.graduation_year) {
           throw new Error('Please complete all required fields in Education.');
         }
+        const year = edu.graduation_year.toString().trim();
+        if (isNaN(year) || year.length !== 4) {
+          throw new Error('Graduation year must be a valid 4-digit number (e.g. 2024).');
+        }
+        const currentYear = new Date().getFullYear();
+        if (parseInt(year) < 1950 || parseInt(year) > currentYear + 10) {
+          throw new Error(`Graduation year must be a realistic year between 1950 and ${currentYear + 10}.`);
+        }
+        if (edu.percentage) {
+          const pctVal = edu.percentage.replace(/%/g, '').trim();
+          if (isNaN(pctVal) || parseFloat(pctVal) < 0) {
+            throw new Error('Education Marks/Grade/CGPA must be a positive number or percentage.');
+          }
+        }
       }
       if (!isFresher) {
         for (const w of workExperience) {
           if (!w.company_name || !w.position || !w.from_date || !w.to_date) {
             throw new Error('Please complete all required fields in Work Experience.');
           }
+          if (new Date(w.from_date) > new Date(w.to_date)) {
+            throw new Error(`In Work Experience at "${w.company_name}", the Start Date cannot be after the End Date.`);
+          }
+          if (new Date(w.from_date) > new Date()) {
+            throw new Error(`In Work Experience at "${w.company_name}", the Start Date cannot be in the future.`);
+          }
+        }
+      }
+
+      for (const ref of cleanRefs) {
+        if (ref.phone && (isNaN(ref.phone) || ref.phone.length !== 10)) {
+          throw new Error(`Reference "${ref.name || 'Reference'}" phone number must be exactly 10 digits.`);
+        }
+        if (ref.email) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(ref.email)) {
+            throw new Error(`Reference "${ref.name || 'Reference'}" has an invalid email address.`);
+          }
+        }
+      }
+
+      if (form.earliest_join_date) {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        if (new Date(form.earliest_join_date) < today) {
+          throw new Error('Earliest join date cannot be in the past.');
         }
       }
 
@@ -436,10 +542,12 @@ export default function ApplicationForm() {
               <div className="form-group">
                 <label className="form-label">Full Name <span style={{ color: 'var(--color-error)' }}>*</span></label>
                 <input className="form-input" placeholder="e.g. John Doe" value={form.full_name} onChange={(e) => updateForm('full_name', e.target.value)} required />
+                {fullNameError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{fullNameError}</p>}
               </div>
               <div className="form-group">
                 <label className="form-label">Email <span style={{ color: 'var(--color-error)' }}>*</span></label>
                 <input className="form-input" type="email" placeholder="john.doe@example.com" value={form.email} onChange={(e) => updateForm('email', e.target.value)} required />
+                {emailError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{emailError}</p>}
               </div>
             </div>
             <div className="form-row">
@@ -604,20 +712,24 @@ export default function ApplicationForm() {
                   <div className="form-group">
                     <label className="form-label">Experience (Years)</label>
                     <input className="form-input" type="number" placeholder="e.g. 2" min="0" value={form.experience_years} onChange={(e) => updateForm('experience_years', e.target.value)} />
+                    {expYearsError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{expYearsError}</p>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Experience (Months)</label>
                     <input className="form-input" type="number" placeholder="e.g. 6" min="0" max="11" value={form.experience_months} onChange={(e) => updateForm('experience_months', e.target.value)} />
+                    {expMonthsError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{expMonthsError}</p>}
                   </div>
                 </div>
                 <div className="form-row" style={{ marginTop: '16px' }}>
                   <div className="form-group">
                     <label className="form-label">Current CTC (in LPA)</label>
                     <input className="form-input" placeholder="e.g. 5.5" value={form.current_ctc} onChange={(e) => updateForm('current_ctc', e.target.value)} />
+                    {currCtcError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{currCtcError}</p>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Expected CTC (in LPA)</label>
                     <input className="form-input" placeholder="e.g. 8.0" value={form.expected_ctc} onChange={(e) => updateForm('expected_ctc', e.target.value)} />
+                    {expCtcError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{expCtcError}</p>}
                   </div>
                 </div>
               </>
@@ -627,6 +739,7 @@ export default function ApplicationForm() {
               <div className="form-group" style={{ marginTop: '16px' }}>
                 <label className="form-label">Expected CTC (in LPA)</label>
                 <input className="form-input" placeholder="e.g. 8.0" value={form.expected_ctc} onChange={(e) => updateForm('expected_ctc', e.target.value)} />
+                {expCtcError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{expCtcError}</p>}
               </div>
             )}
 
@@ -634,6 +747,7 @@ export default function ApplicationForm() {
               <div className="form-group" style={{ marginTop: '16px' }}>
                 <label className="form-label">Notice Period (Days)</label>
                 <input className="form-input" placeholder="e.g. 30" value={form.notice_period} onChange={(e) => updateForm('notice_period', e.target.value)} />
+                {noticeError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{noticeError}</p>}
               </div>
             )}
           </section>

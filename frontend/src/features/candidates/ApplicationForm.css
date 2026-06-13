@@ -295,8 +295,22 @@
   border-radius: var(--radius-md);
 }
 
-.submit-btn:hover {
+.submit-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
+}
+
+.submit-btn:disabled {
+  background: #cbd5e1 !important;
+  background-image: none !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+[data-theme="dark"] .submit-btn:disabled {
+  background: #27272a !important;
+  background-image: none !important;
+  color: #71717a !important;
 }
 
 /* ── Add/outline buttons in form sections ─────────────────────── */

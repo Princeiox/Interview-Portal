@@ -41,7 +41,29 @@ api.interceptors.response.use(
         
         if (!error.response || error.code === 'ERR_NETWORK') {
             error.isNetworkError = true;
-            error.message = 'Unable to connect to the server. Please check your internet connection.';
+            if (typeof window !== 'undefined' && !window.navigator.onLine) {
+                error.message = 'You are offline. Please check your internet connection.';
+            } else {
+                error.message = 'Server is offline or unreachable. Please try again later.';
+            }
+        } else if (error.response?.data?.detail) {
+            const detail = error.response.data.detail;
+            if (typeof detail === 'string') {
+                error.message = detail;
+            } else if (Array.isArray(detail)) {
+                error.message = detail.map(d => {
+                    const field = d.loc[d.loc.length - 1];
+                    const msg = d.msg;
+                    const niceField = typeof field === 'string' 
+                        ? field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) 
+                        : field;
+                    return `${niceField}: ${msg}`;
+                }).join(', ');
+            }
+        } else if (error.response?.data?.message) {
+            error.message = error.response.data.message;
+        } else if (error.response?.statusText) {
+            error.message = `Server Error: ${error.response.statusText} (${error.response.status})`;
         }
         
         return Promise.reject(error);
