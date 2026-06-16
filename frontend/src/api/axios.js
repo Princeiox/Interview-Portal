@@ -39,6 +39,11 @@ api.interceptors.response.use(
             }
         }
         
+        if (error.response?.status === 413) {
+            error.message = 'The uploaded file or photo is too large. Please upload files smaller than 1.5MB.';
+            return Promise.reject(error);
+        }
+        
         if (!error.response || error.code === 'ERR_NETWORK') {
             error.isNetworkError = true;
             if (typeof window !== 'undefined' && !window.navigator.onLine) {
