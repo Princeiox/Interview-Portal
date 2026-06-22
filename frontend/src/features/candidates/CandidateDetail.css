@@ -667,10 +667,10 @@
   border-color: rgba(147, 197, 253, 0.3) !important;
 }
 
-[data-theme="dark"] .status-select-dropdown.badge-screening {
-  background-color: #78350f !important;
-  color: #fbbf24 !important;
-  border-color: rgba(251, 191, 36, 0.3) !important;
+[data-theme="dark"] .status-select-dropdown.badge-email-sent-hr {
+  background-color: #075985 !important;
+  color: #7dd3fc !important;
+  border-color: rgba(125, 211, 252, 0.3) !important;
 }
 
 [data-theme="dark"] .status-select-dropdown.badge-on-hold {
@@ -679,10 +679,10 @@
   border-color: rgba(212, 212, 216, 0.3) !important;
 }
 
-[data-theme="dark"] .status-select-dropdown.badge-interview {
-  background-color: #312e81 !important;
-  color: #a5b4fc !important;
-  border-color: rgba(165, 180, 252, 0.3) !important;
+[data-theme="dark"] .status-select-dropdown.badge-not-appeared {
+  background-color: #78350f !important;
+  color: #fbbf24 !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
 }
 
 [data-theme="dark"] .status-select-dropdown.badge-hr-round {

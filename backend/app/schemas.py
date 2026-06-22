@@ -154,6 +154,7 @@ class EmailSendRequest(BaseModel):
     """Schema for sending an email to a candidate."""
     subject: str
     body: str
+    template_type: Optional[str] = None
 
 # ── Assessment ────────────────────────────────────────────────────────────
 

@@ -18,10 +18,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import ConfirmModal from '@/components/ConfirmModal';
 import './CandidateDetail.css';
 
-/**
- * ── CONSTANTS ─────────────────────────────────────────────────────────────
- */
-const STATUS_OPTIONS = ['Applied', 'Screening', 'Interview', 'HR Round', 'On Hold', 'Offered', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['Applied', 'Email sent for HR round', 'HR Round', 'Candidate not appeared', 'On Hold', 'Offered', 'Hired', 'Rejected'];
 const COMMON_SKILLS = ['Python', 'SQL', 'Fastapi', 'React', 'Node.js', 'AWS'];
 const HR_COMMON_SKILLS = ['Communication Skills', 'Confidence', 'Positive Attitude', 'Teamwork', 'Problem-Solving Ability', 'Adaptability', 'Professionalism', 'Cultural Fit', 'Career Motivation', 'Leadership Potential'];
 const RECOMMENDATION_LABELS = {
@@ -34,9 +31,9 @@ const RECOMMENDATION_LABELS = {
 const RECOMMENDATION_BADGES = {
   'Hire': 'badge-hired',
   'Reject': 'badge-rejected',
-  'Next Round': 'badge-screening',
+  'Next Round': 'badge-on-hold',
   'On Hold': 'badge-on-hold',
-  'HR Round': 'badge-interview'
+  'HR Round': 'badge-hr-round'
 };
 
 /**
@@ -45,9 +42,9 @@ const RECOMMENDATION_BADGES = {
 const getStatusBadgeClass = (s) => {
   const m = {
     Applied: 'badge-applied',
-    Screening: 'badge-screening',
-    Interview: 'badge-interview',
+    'Email sent for HR round': 'badge-email-sent-hr',
     'HR Round': 'badge-hr-round',
+    'Candidate not appeared': 'badge-not-appeared',
     'On Hold': 'badge-on-hold',
     Offered: 'badge-offered',
     Hired: 'badge-hired',
@@ -55,6 +52,7 @@ const getStatusBadgeClass = (s) => {
   };
   return m[s] || 'badge-applied';
 };
+
 
 const formatDate = (ds) => {
   if (!ds) return 'N/A';
@@ -813,6 +811,7 @@ export default function CandidateDetail() {
           isOpen={showEmailModal}
           onClose={() => setShowEmailModal(false)}
           candidate={candidate}
+          onSent={fetchCandidate}
         />
       )}
     </div>
@@ -943,7 +942,8 @@ function AssessmentForm({ type, initialData, onSubmit, currentUser }) {
 /**
  * ── SUB-COMPONENT: EmailModal ─────────────────────────────────────────────
  */
-function EmailModal({ isOpen, onClose, candidate }) {
+
+function EmailModal({ isOpen, onClose, candidate, onSent }) {
   const toast = useToast();
   const [date, setDate] = useState('');
   const [subject, setSubject] = useState('Interview Invitation');
@@ -1012,8 +1012,9 @@ function EmailModal({ isOpen, onClose, candidate }) {
   const handleSend = async (e) => {
     e.preventDefault();
     try {
-      await api.post(`/candidates/${candidate.id}/send-email`, { subject, body });
+      await api.post(`/candidates/${candidate.id}/send-email`, { subject, body, template_type: templateType });
       toast.success('Email sent successfully');
+      if (onSent) onSent();
       onClose();
     } catch (err) {
       toast.error(err.isNetworkError ? err.message : (err.response?.data?.detail || 'Failed to send email'));

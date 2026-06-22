@@ -35,7 +35,6 @@ export default function ApplicationForm() {
   const [loading, setLoading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [cvName, setCvName] = useState('');
-  const [cvPreview, setCvPreview] = useState(null);
   const [ageWarning, setAgeWarning] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [refPhoneErrors, setRefPhoneErrors] = useState({});
@@ -244,11 +243,6 @@ export default function ApplicationForm() {
       }
       setCv(file);
       setCvName(file.name);
-      if (file.type === 'application/pdf') {
-        setCvPreview(URL.createObjectURL(file));
-      } else {
-        setCvPreview(null);
-      }
     }
   };
 
@@ -268,7 +262,6 @@ export default function ApplicationForm() {
     e.stopPropagation();
     setCv(null);
     setCvName('');
-    setCvPreview(null);
     if (cvRef.current) cvRef.current.value = '';
   };
 
@@ -502,21 +495,13 @@ export default function ApplicationForm() {
                 <input ref={photoRef} type="file" accept="image/*" onChange={handlePhotoChange} hidden />
               </div>
 
-              <div className="upload-cv-area" onClick={() => cvRef.current.click()} style={{ position: 'relative', minHeight: '140px', padding: cvPreview ? '0' : '20px' }}>
+              <div className="upload-cv-area" onClick={() => cvRef.current.click()} style={{ position: 'relative', height: '140px', padding: '20px', boxSizing: 'border-box' }}>
                 {cvName && (
                   <button type="button" onClick={removeCv} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>
                     <X size={14} />
                   </button>
                 )}
-                {cvPreview ? (
-                  <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                    <iframe src={`${cvPreview}#toolbar=0&navpanes=0&scrollbar=0`} width="100%" height="180px" title="CV Preview" style={{ border: 'none', pointerEvents: 'none', overflow: 'hidden' }} scrolling="no" />
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', fontSize: '0.7rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cvName}</span>
-                      <span style={{ opacity: 0.8 }}>Change</span>
-                    </div>
-                  </div>
-                ) : cvName ? (
+                {cvName ? (
                   <div className="upload-placeholder" style={{ padding: '20px' }}>
                     <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📄</div>
                     <span style={{ fontWeight: 600, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cvName}</span>

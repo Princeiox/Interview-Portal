@@ -468,6 +468,10 @@ async def send_email_to_candidate(
         
     try:
         await send_email_async(candidate.email, request.subject, request.body)
+        if request.template_type == "HR Round":
+            candidate.status = models.CandidateStatus.EMAIL_SENT_HR
+            db.commit()
+            db.refresh(candidate)
         return {"detail": "Email sent successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")

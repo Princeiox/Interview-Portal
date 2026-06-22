@@ -41,7 +41,7 @@ def create_assessment(
     elif rec == "HR Round":
         candidate.status = models.CandidateStatus.HR_ROUND
     elif rec in ["Next Round", "Interview"]:
-        candidate.status = models.CandidateStatus.INTERVIEW
+        candidate.status = models.CandidateStatus.HR_ROUND
     elif rec in ["On Hold", "Waitlist"]:
         candidate.status = models.CandidateStatus.ON_HOLD
 
@@ -110,7 +110,7 @@ def update_assessment(
         elif rec == "HR Round":
             candidate.status = models.CandidateStatus.HR_ROUND
         elif rec in ["Next Round", "Interview"]:
-            candidate.status = models.CandidateStatus.INTERVIEW
+            candidate.status = models.CandidateStatus.HR_ROUND
         elif rec in ["On Hold", "Waitlist"]:
             candidate.status = models.CandidateStatus.ON_HOLD
 
