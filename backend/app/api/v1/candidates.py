@@ -468,10 +468,26 @@ async def send_email_to_candidate(
         
     try:
         await send_email_async(candidate.email, request.subject, request.body)
-        if request.template_type == "HR Round":
-            candidate.status = models.CandidateStatus.EMAIL_SENT_HR
-            db.commit()
-            db.refresh(candidate)
-        return {"detail": "Email sent successfully"}
+        email_status = "sent successfully"
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+        import logging
+        logging.getLogger(__name__).warning(f"SMTP sending failed: {str(e)}. Falling back to console printing.")
+        
+        # Ensure characters are safe for Windows console CP1252 encoding to avoid UnicodeEncodeError
+        safe_subject = request.subject.encode('ascii', errors='backslashreplace').decode('ascii')
+        safe_body = request.body.encode('ascii', errors='backslashreplace').decode('ascii')
+        
+        print("\n" + "="*80)
+        print(f"[FALLBACK EMAIL LOG - SMTP FAILED]")
+        print(f"To: {candidate.email}")
+        print(f"Subject: {safe_subject}")
+        print(f"Body:\n{safe_body}")
+        print("="*80 + "\n")
+        email_status = "logged to server console (SMTP authentication/sending failed)"
+        
+    if request.template_type == "HR Round":
+        candidate.status = models.CandidateStatus.EMAIL_SENT_HR
+        db.commit()
+        db.refresh(candidate)
+    return {"detail": f"Email {email_status}"}
+
