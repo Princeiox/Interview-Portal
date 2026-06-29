@@ -43,14 +43,14 @@ function formatDate(dateStr) {
 
 function getLatestInterviewerName(candidate) {
   if (!candidate.assessments || candidate.assessments.length === 0) return null;
-  
+
   // Sort assessments by conducted_at descending to find the latest
   const sorted = [...candidate.assessments].sort((a, b) => {
     return new Date(b.conducted_at) - new Date(a.conducted_at);
   });
-  
+
   const latestAssessment = sorted[0];
-  
+
   // Try parsed JSON remarks first, as it represents the actual interviewer conducting the round
   if (latestAssessment.remarks && latestAssessment.remarks.startsWith('{')) {
     try {
@@ -62,33 +62,33 @@ function getLatestInterviewerName(candidate) {
       // ignore
     }
   }
-  
+
   // Fall back to direct relation (the user account that created/logged the assessment)
   if (latestAssessment.interviewer?.name) {
     return latestAssessment.interviewer.name;
   }
-  
+
   return null;
 }
 
 function getInterviewerForRound(candidate, roundType) {
   if (!candidate.assessments || candidate.assessments.length === 0) return null;
-  
-  const assessment = candidate.assessments.find(a => 
-    a.assessment_type === roundType || 
+
+  const assessment = candidate.assessments.find(a =>
+    a.assessment_type === roundType ||
     (roundType === 'Tech Round' && a.assessment_type === 'TECH') ||
     (roundType === 'HR Round' && a.assessment_type === 'HR')
   );
-  
+
   if (!assessment) return null;
-  
+
   if (assessment.remarks && assessment.remarks.startsWith('{')) {
     try {
       const r = JSON.parse(assessment.remarks);
       if (r.interviewerInfo?.name) return r.interviewerInfo.name;
-    } catch (e) {}
+    } catch (e) { }
   }
-  
+
   return assessment.interviewer?.name || null;
 }
 
@@ -198,16 +198,16 @@ export default function CandidateDashboard() {
       toast.error('No candidates to export');
       return;
     }
-    
+
     const headers = [
-      'Candidate ID', 'Full Name', 'Email', 'Phone', 'Position Applied', 
-      'Status', 'Experience (Years)', 'Experience (Months)', 
+      'Candidate ID', 'Full Name', 'Email', 'Phone', 'Position Applied',
+      'Status', 'Experience (Years)', 'Experience (Months)',
       'Current CTC', 'Expected CTC', 'Notice Period', 'Date Applied',
       'Tech Round Score', 'Tech Round Recommendation', 'HR Round Score', 'HR Round Recommendation'
     ];
-    
+
     const escapeCsv = (str) => `"${String(str || '').replace(/"/g, '""')}"`;
-    
+
     const getRoundData = (assessments, type) => {
       if (!assessments || !Array.isArray(assessments)) return { score: '', rec: '' };
       const round = assessments.find(a => a.assessment_type === type || a.assessment_type === (type === 'Tech Round' ? 'TECH' : 'HR'));
@@ -238,9 +238,9 @@ export default function CandidateDashboard() {
         escapeCsv(hr.rec)
       ];
     });
-    
+
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -262,7 +262,7 @@ export default function CandidateDashboard() {
             <p className="dashboard-count">{filtered.length} candidates</p>
           </div>
         </div>
-        
+
         <div className="dashboard-header-right">
           <button className="btn btn-primary btn-sm export-btn" onClick={exportToCSV}>
             <Download size={14} /> <span className="btn-text">Export CSV</span>

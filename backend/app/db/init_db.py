@@ -17,8 +17,22 @@ def init_db() -> None:
                 
                 # Migrate any existing candidates still in Screening or Interview status
                 conn.execute(text("UPDATE candidates SET status = 'Applied' WHERE status IN ('Screening', 'Interview')"))
+                
+                # Ensure tests table has the duration column
+                conn.execute(text("ALTER TABLE tests ADD COLUMN IF NOT EXISTS duration INTEGER DEFAULT 30"))
+
+                # Ensure questions table has question_type column
+                conn.execute(text("ALTER TABLE questions ADD COLUMN IF NOT EXISTS question_type VARCHAR DEFAULT 'MCQ'"))
+
+                # Drop NOT NULL constraints for options on PostgreSQL
+                conn.execute(text("ALTER TABLE questions ALTER COLUMN option_a DROP NOT NULL"))
+                conn.execute(text("ALTER TABLE questions ALTER COLUMN option_b DROP NOT NULL"))
+                conn.execute(text("ALTER TABLE questions ALTER COLUMN option_c DROP NOT NULL"))
+                conn.execute(text("ALTER TABLE questions ALTER COLUMN option_d DROP NOT NULL"))
+                conn.execute(text("ALTER TABLE questions ALTER COLUMN correct_option DROP NOT NULL"))
             except Exception as e:
                 # Logging the error but letting the app start normally
                 import logging
                 logging.getLogger(__name__).warning(f"Auto-migration skipped or failed: {str(e)}")
+
 

@@ -42,6 +42,7 @@ class Settings:
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "uploads")
 
     # CORS
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
     BACKEND_CORS_ORIGINS: list[str] = _build_cors_origins()
     BACKEND_CORS_ORIGIN_REGEX: str = os.getenv(
         "BACKEND_CORS_ORIGIN_REGEX",

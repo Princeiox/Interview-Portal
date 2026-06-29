@@ -7,7 +7,12 @@
  */
 import axios from 'axios';
 
-const API = import.meta.env.VITE_API_URL ?? "";
+let API = import.meta.env.VITE_API_URL ?? "";
+
+// Dynamically adjust API url if accessed from a mobile phone / another device on the local network
+if (typeof window !== 'undefined' && API.includes('localhost') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    API = API.replace('localhost', window.location.hostname);
+}
 
 const api = axios.create({
     baseURL: API ? `${API}/api/v1` : '/api/v1',

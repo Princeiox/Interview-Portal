@@ -184,8 +184,16 @@
 .candidate-name {
   font-size: 1.125rem;
   font-weight: 700;
-  color: var(--color-text-primary);
+  color: var(--color-text-primary) !important;
   margin-bottom: 2px;
+}
+
+[data-theme="light"] .candidate-name {
+  color: #000000 !important;
+}
+
+[data-theme="dark"] .candidate-name {
+  color: #ffffff !important;
 }
 
 .candidate-position {

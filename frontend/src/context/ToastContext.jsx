@@ -27,7 +27,16 @@ export function ToastProvider({ children }) {
   const info = useCallback((msg) => addToast(msg, 'info'), [addToast]);
   const warning = useCallback((msg) => addToast(msg, 'warning'), [addToast]);
 
-  const value = useMemo(() => ({ success, error, info, warning }), [success, error, info, warning]);
+  const value = useMemo(() => ({ 
+    success, 
+    error, 
+    info, 
+    warning,
+    showSuccess: success,
+    showError: error,
+    showWarning: warning,
+    showInfo: info
+  }), [success, error, info, warning]);
 
   return (
     <ToastContext.Provider value={value}>

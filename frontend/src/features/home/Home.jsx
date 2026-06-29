@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Users, ClipboardCheck, LogOut, LogIn } from 'lucide-react';
+import { FileText, Users, ClipboardCheck, LogOut, LogIn, BookOpen } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -40,6 +40,14 @@ export default function Home() {
       action: 'Go to Dashboard',
       path: (isAdmin || user?.role === 'INTERVIEWER') ? '/interview' : '/candidates',
       visible: true,
+    },
+    {
+      icon: <BookOpen size={28} />,
+      title: 'Test Module',
+      description: 'Upload MCQ tests via CSV, assign tests to candidates, and track scores.',
+      action: 'Manage Tests',
+      path: '/tests',
+      visible: user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'INTERVIEWER'
     }
   ].filter(card => card.visible);
 

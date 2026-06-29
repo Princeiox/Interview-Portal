@@ -242,3 +242,98 @@ class CandidateResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ── Test Module ─────────────────────────────────────────────────────────
+
+class QuestionPublicResponse(BaseModel):
+    """Schema for candidate-facing questions (no correct answers)."""
+    id: int
+    test_id: int
+    question_text: str
+    question_type: Optional[str] = "MCQ"
+    option_a: Optional[str] = None
+    option_b: Optional[str] = None
+    option_c: Optional[str] = None
+    option_d: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class QuestionResponse(QuestionPublicResponse):
+    """Schema for admin-facing questions (includes correct answers)."""
+    correct_option: Optional[str] = None
+
+
+class TestResponse(BaseModel):
+    """Schema for test details."""
+    id: int
+    title: str
+    description: Optional[str] = None
+    duration: Optional[int] = None
+    created_at: datetime
+    questions: Optional[List[QuestionResponse]] = None
+
+    class Config:
+        from_attributes = True
+
+
+class CandidateMinimalResponse(BaseModel):
+    """Minimal Candidate info for assignments list."""
+    id: int
+    full_name: str
+    email: str
+    position_applied: str
+
+    class Config:
+        from_attributes = True
+
+
+class CandidateTestResponse(BaseModel):
+    """Schema for test assignments."""
+    id: int
+    candidate_id: int
+    test_id: int
+    assigned_at: datetime
+    completed_at: Optional[datetime] = None
+    score: Optional[int] = None
+    total_questions: Optional[int] = None
+    answers: Optional[Any] = None
+    candidate: Optional[CandidateMinimalResponse] = None
+    test: Optional[TestResponse] = None
+
+    class Config:
+        from_attributes = True
+
+
+class TestAssignmentCreate(BaseModel):
+    """Schema for creating a test assignment."""
+    candidate_id: int
+    test_id: int
+
+
+class TestSubmissionRequest(BaseModel):
+    """Schema for candidate test submissions."""
+    answers: Any  # dict of {question_id: selected_option}
+
+
+class QuestionCreate(BaseModel):
+    """Schema for manual question creation."""
+    question_text: str
+    question_type: Optional[str] = "MCQ"
+    option_a: Optional[str] = None
+    option_b: Optional[str] = None
+    option_c: Optional[str] = None
+    option_d: Optional[str] = None
+    correct_option: Optional[str] = None  # "A", "B", "C", or "D" or template/solution
+
+
+class TestCreate(BaseModel):
+    """Schema for manual test creation."""
+    title: str
+    description: Optional[str] = None
+    duration: Optional[int] = 30
+    questions: List[QuestionCreate]
+
+

@@ -291,7 +291,9 @@ export default function ApplicationForm() {
 
       // Basic fields
       Object.entries(form).forEach(([k, v]) => {
-        if (v !== '' && v !== null && v !== undefined) fd.append(k, v);
+        if (k !== 'skills' && k !== 'languages') {
+          if (v !== '' && v !== null && v !== undefined) fd.append(k, v);
+        }
       });
 
       // JSON fields (Filter out empty items to keep database clean)
@@ -304,8 +306,8 @@ export default function ApplicationForm() {
       fd.append('references', JSON.stringify(cleanRefs));
 
       // Skills and languages as JSON arrays
-      if (form.skills) fd.set('skills', JSON.stringify(form.skills.split(',').map(s => s.trim()).filter(Boolean)));
-      if (form.languages) fd.set('languages', JSON.stringify(form.languages.split(',').map(s => s.trim()).filter(Boolean)));
+      if (form.skills) fd.append('skills', JSON.stringify(form.skills.split(',').map(s => s.trim()).filter(Boolean)));
+      if (form.languages) fd.append('languages', JSON.stringify(form.languages.split(',').map(s => s.trim()).filter(Boolean)));
 
       // Files
       if (!isEditMode && !photo) throw new Error('Please upload your photo (required).');

@@ -16,6 +16,8 @@ import ApplicationForm from '@/features/candidates/ApplicationForm';
 import CandidateDashboard from '@/features/candidates/CandidateDashboard';
 import CandidateDetail from '@/features/candidates/CandidateDetail';
 import InterviewDashboard from '@/features/interviews/InterviewDashboard';
+import TestModule from '@/features/tests/TestModule';
+import TakeTest from '@/features/tests/TakeTest';
 
 function ProtectedRoute({ children, roles }) {
   const { isAuthenticated, user } = useAuth();
@@ -43,6 +45,10 @@ function App() {
         <Route path="/interview" element={
           <ProtectedRoute><InterviewDashboard /></ProtectedRoute>
         } />
+        <Route path="/tests" element={
+          <ProtectedRoute roles={['ADMIN', 'HR', 'INTERVIEWER']}><TestModule /></ProtectedRoute>
+        } />
+        <Route path="/take-test/:candidate_test_id" element={<TakeTest />} />
       </Routes>
       <LogoutModal />
     </>

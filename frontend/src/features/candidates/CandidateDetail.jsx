@@ -12,7 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import {
   ArrowLeft, Mail, Phone, MapPin, Briefcase, FileText,
-  Plus, Pencil, X, Star, User, GraduationCap, Users, Trash2, Columns
+  Plus, Pencil, X, Star, User, GraduationCap, Users, Trash2, Columns, Copy, Share2, RotateCcw
 } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -86,6 +86,11 @@ export default function CandidateDetail() {
 
   const [candidate, setCandidate] = useState(null);
   const [assessments, setAssessments] = useState([]);
+  const [candidateTests, setCandidateTests] = useState([]);
+  const [availableTests, setAvailableTests] = useState([]);
+  const [selectedAssignmentForViewer, setSelectedAssignmentForViewer] = useState(null);
+  const [selectedTestId, setSelectedTestId] = useState('');
+  const [isAssigningTest, setIsAssigningTest] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
@@ -116,15 +121,98 @@ export default function CandidateDetail() {
     } catch (err) { console.error(err); }
   }, [id]);
 
+  const fetchCandidateTests = useCallback(async () => {
+    try {
+      const res = await api.get(`/tests/assignments?candidate_id=${id}`);
+      setCandidateTests(res.data);
+    } catch (err) { console.error('Failed to fetch candidate tests:', err); }
+  }, [id]);
+
+  const fetchAvailableTests = useCallback(async () => {
+    try {
+      const res = await api.get('/tests');
+      setAvailableTests(res.data);
+    } catch (err) { console.error('Failed to fetch tests:', err); }
+  }, []);
+
+  const handleAssignTest = async (e) => {
+    e.preventDefault();
+    if (!selectedTestId) {
+      toast.warning('Please select a test to assign.');
+      return;
+    }
+    setIsAssigningTest(true);
+    try {
+      await api.post('/tests/assign', {
+        test_id: parseInt(selectedTestId),
+        candidate_id: parseInt(id),
+      });
+      toast.success('Test assigned successfully!');
+      setSelectedTestId('');
+      fetchCandidateTests();
+    } catch (err) {
+      toast.error('Failed to assign test: ' + (err.message || err));
+    } finally {
+      setIsAssigningTest(false);
+    }
+  };
+
+  const handleCopyLink = (assignmentId) => {
+    const link = `${window.location.origin}/take-test/${assignmentId}`;
+    navigator.clipboard.writeText(link).then(
+      () => toast.success('Link copied to clipboard!'),
+      () => toast.error('Failed to copy link.')
+    );
+  };
+
+  const handleShareWhatsApp = (assignment) => {
+    const link = `${window.location.origin}/take-test/${assignment.id}`;
+    const candidateName = candidate?.full_name || 'Candidate';
+    const testTitle = assignment.test?.title || 'Assessment';
+    const phone = candidate?.phone || '';
+    
+    const message = `Hi ${candidateName},\n\nYou have been assigned the online MCQ test "${testTitle}" as part of the recruitment process at Eulogik.\n\nPlease complete the test by clicking the link below:\n${link}\n\nBest of luck!\nEulogik Recruitment Team`;
+    
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleShareEmail = (assignment) => {
+    const link = `${window.location.origin}/take-test/${assignment.id}`;
+    const candidateName = candidate?.full_name || 'Candidate';
+    const testTitle = assignment.test?.title || 'Assessment';
+    const email = candidate?.email || '';
+    
+    const subject = encodeURIComponent(`Online MCQ Test Assigned: ${testTitle}`);
+    const body = encodeURIComponent(`Dear ${candidateName},\n\nYou have been assigned the online MCQ test "${testTitle}" as part of the recruitment process at Eulogik.\n\nPlease complete the test by clicking the link below:\n\n${link}\n\nBest of luck!\n\nBest regards,\nEulogik Recruitment Team`);
+    
+    const url = `mailto:${email}?subject=${subject}&body=${body}`;
+    window.open(url, '_blank');
+  };
+
+  const handleReattempt = async (candidateTestId) => {
+    if (!window.confirm('Are you sure you want to allow the candidate to re-attempt this test? This will reset their previous score and answers.')) {
+      return;
+    }
+    try {
+      await api.post(`/tests/assignments/${candidateTestId}/reattempt`);
+      toast.success('Test reset successfully! Candidate can now re-attempt.');
+      fetchCandidateTests();
+    } catch (err) {
+      toast.error('Failed to reset test: ' + (err.message || err));
+    }
+  };
+
   useEffect(() => {
     if (!id) return;
     const load = async () => {
       setLoading(true);
-      await Promise.all([fetchCandidate(), fetchAssessments()]);
+      await Promise.all([fetchCandidate(), fetchAssessments(), fetchCandidateTests(), fetchAvailableTests()]);
       setTimeout(() => setLoading(false), 100);
     };
     load();
-  }, [id, fetchCandidate, fetchAssessments]);
+  }, [id, fetchCandidate, fetchAssessments, fetchCandidateTests, fetchAvailableTests]);
 
   useEffect(() => {
     if (showAssessmentModal || showPhotoModal || showEmailModal || showDeleteConfirm) {
@@ -178,6 +266,163 @@ export default function CandidateDetail() {
     setEditingAssessment(e);
     setAssessmentType(t || (e ? e.assessment_type : 'Tech Round'));
     setShowAssessmentModal(true);
+  };
+
+  const renderTestsTab = () => {
+    return (
+      <div className="stagger-children">
+        {/* Assign Test Card/Section */}
+        <div className="profile-section" style={{ padding: '20px' }}>
+          <h3 className="section-title" style={{ border: 'none', marginBottom: '16px' }}>Assign MCQ Test</h3>
+          <form onSubmit={handleAssignTest} style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div className="form-group" style={{ margin: 0, flex: 1, minWidth: '200px' }}>
+              <select
+                className="form-input"
+                value={selectedTestId}
+                onChange={(e) => setSelectedTestId(e.target.value)}
+                style={{ width: '100%', height: '42px' }}
+              >
+                <option value="">-- Select a test --</option>
+                {availableTests.map((t) => (
+                  <option key={t.id} value={t.id}>{t.title} ({t.questions?.length || 0} questions)</option>
+                ))}
+              </select>
+            </div>
+            <button type="submit" className="btn btn-primary" style={{ height: '42px', padding: '0 24px' }} disabled={isAssigningTest}>
+              {isAssigningTest ? 'Assigning...' : 'Assign Test'}
+            </button>
+          </form>
+        </div>
+
+        {/* Assignments List */}
+        <div className="profile-section" style={{ marginTop: '20px' }}>
+          <h3 className="section-title" style={{ border: 'none', marginBottom: '16px' }}>Test History & Assignments</h3>
+          {candidateTests.length === 0 ? (
+            <p className="text-muted">No tests assigned to this candidate yet.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {candidateTests.map((item) => {
+                const isCompleted = !!item.completed_at;
+                const questions = item.test?.questions || [];
+                const mcqs = questions.filter(q => q.question_type !== 'CODING' && (q.option_a || q.option_b || q.option_c || q.option_d));
+                const mcqsCount = mcqs.length;
+                const codingCount = questions.length - mcqsCount;
+                const percent = isCompleted && mcqsCount > 0
+                  ? Math.round((item.score / mcqsCount) * 100)
+                  : 0;
+
+                return (
+                  <div key={item.id} className="assessment-result-card" style={{ padding: '16px', border: '1px solid var(--color-border)', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <h4 style={{ margin: 0, fontWeight: 700 }}>{item.test?.title || 'MCQ Test'}</h4>
+                        <p className="sub-text" style={{ margin: '4px 0 0 0' }}>
+                          Assigned on {new Date(item.assigned_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <div>
+                        {isCompleted ? (
+                          <span className="badge badge-hired">Completed</span>
+                        ) : (
+                          <span className="badge badge-not-appeared">Pending</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        {isCompleted ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            {mcqsCount > 0 ? (
+                              <span style={{ fontWeight: 600 }}>
+                                MCQ Score: <span style={{ color: 'var(--color-primary)' }}>{item.score} / {mcqsCount}</span> ({percent}%)
+                              </span>
+                            ) : null}
+                            {codingCount > 0 && (
+                              <span style={{
+                                fontSize: '0.8rem',
+                                fontWeight: 700,
+                                background: 'rgba(2, 132, 199, 0.15)',
+                                color: '#0284c7',
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                display: 'inline-block',
+                                width: 'fit-content'
+                              }}>
+                                Coding Submissions: Review Pending
+                              </span>
+                            )}
+                            {mcqsCount === 0 && codingCount === 0 && (
+                              <span style={{ fontWeight: 600 }}>
+                                Score: <span style={{ color: 'var(--color-primary)' }}>{item.score} / {item.total_questions}</span>
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted" style={{ fontSize: '0.9rem' }}>Awaiting candidate response</span>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {isCompleted && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline"
+                            title="View Responses"
+                            onClick={() => setSelectedAssignmentForViewer(item)}
+                            style={{ padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--color-primary)', borderColor: 'var(--color-primary)' }}
+                          >
+                            <FileText size={12} /> View Responses
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline"
+                          title="Copy Link"
+                          onClick={() => handleCopyLink(item.id)}
+                          style={{ padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
+                        >
+                          <Copy size={12} /> Copy Link
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline"
+                          title="Share on WhatsApp"
+                          onClick={() => handleShareWhatsApp(item)}
+                          style={{ padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#25d366', borderColor: '#25d366' }}
+                        >
+                          <Share2 size={12} /> WhatsApp
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline"
+                          title="Share via Email"
+                          onClick={() => handleShareEmail(item)}
+                          style={{ padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#0284c7', borderColor: '#0284c7' }}
+                        >
+                          <Mail size={12} /> Email
+                        </button>
+                        {user?.role === 'ADMIN' && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline"
+                            title="Make Candidate Reattempt Test"
+                            onClick={() => handleReattempt(item.id)}
+                            style={{ padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#ea580c', borderColor: '#ea580c' }}
+                          >
+                            <RotateCcw size={12} /> Re-attempt
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   if (loading) return <div className="loading-screen"><div className="spinner" /></div>;
@@ -260,11 +505,16 @@ export default function CandidateDetail() {
       />
 
       <div className="tabs">
-        {['profile', 'history', 'assessments'].map(t => (
-          <button key={t} className={`tab ${activeTab === t ? 'active' : ''}`} onClick={() => setActiveTab(t)}>
-            {t.charAt(0).toUpperCase() + t.slice(1)} {t === 'assessments' && `(${assessments.length})`}
-          </button>
-        ))}
+        {['profile', 'history', 'assessments', 'tests'].map(t => {
+          let label = t.charAt(0).toUpperCase() + t.slice(1);
+          if (t === 'assessments') label += ` (${assessments.length})`;
+          if (t === 'tests') label = `Online Tests (${candidateTests.length})`;
+          return (
+            <button key={t} className={`tab ${activeTab === t ? 'active' : ''}`} onClick={() => setActiveTab(t)}>
+              {label}
+            </button>
+          );
+        })}
       </div>
 
       {isCompareMode ? (
@@ -476,6 +726,8 @@ export default function CandidateDetail() {
                 })}
               </div>
             )}
+
+            {activeTab === 'tests' && renderTestsTab()}
           </div>
 
           {/* RIGHT PANEL: Resume / CV */}
@@ -766,6 +1018,8 @@ export default function CandidateDetail() {
               })}
             </div>
           )}
+
+          {activeTab === 'tests' && renderTestsTab()}
         </div>
       )}
 
@@ -812,6 +1066,13 @@ export default function CandidateDetail() {
           onClose={() => setShowEmailModal(false)}
           candidate={candidate}
           onSent={fetchCandidate}
+        />
+      )}
+
+      {selectedAssignmentForViewer && (
+        <TestResponsesModal
+          assignment={selectedAssignmentForViewer}
+          onClose={() => setSelectedAssignmentForViewer(null)}
         />
       )}
     </div>
@@ -1056,6 +1317,129 @@ function EmailModal({ isOpen, onClose, candidate, onSent }) {
           </div>
           <button type="submit" className="btn btn-primary btn-block" style={{ padding: '12px', marginTop: '8px' }}>Send Email</button>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function TestResponsesModal({ assignment, onClose }) {
+  if (!assignment) return null;
+  const questions = assignment.test?.questions || [];
+  const answers = assignment.answers || {};
+
+  return (
+    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 9999 }}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '800px', width: '95%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)', padding: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--color-border)', paddingBottom: '12px' }}>
+          <div>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: 'var(--color-text-primary)' }}>{assignment.test?.title || 'Test Details'}</h2>
+            <p className="sub-text" style={{ margin: '4px 0 0 0' }}>Candidate: <strong>{assignment.candidate?.full_name}</strong> • Completed on {new Date(assignment.completed_at).toLocaleString()}</p>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '1.5rem', fontWeight: 'bold' }}>×</button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {questions.map((q, idx) => {
+            const ans = answers[q.id.toString()] || answers[q.id];
+            const isCoding = q.question_type === 'CODING' || (!q.option_a && !q.option_b && !q.option_c && !q.option_d);
+            
+            return (
+              <div key={q.id} style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '16px', background: 'var(--color-bg)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--color-text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Question {idx + 1} ({isCoding ? 'Coding' : 'MCQ'})</span>
+                  {!isCoding && (
+                    <span style={{
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      background: ans === q.correct_option ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                      color: ans === q.correct_option ? '#22c55e' : '#ef4444'
+                    }}>
+                      {ans === q.correct_option ? 'Correct' : 'Incorrect'}
+                    </span>
+                  )}
+                </div>
+                <h4 style={{ margin: '0 0 16px 0', fontSize: '1.05rem', fontWeight: 600, color: 'var(--color-text-primary)' }}>{q.question_text}</h4>
+
+                {isCoding ? (
+                  <div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                      Selected Language: <strong style={{ color: 'var(--color-primary)' }}>{(ans?.language || 'N/A').toUpperCase()}</strong>
+                    </div>
+                    {ans?.code ? (
+                      <div style={{
+                        background: '#1a1a1a',
+                        color: '#9cdcfe',
+                        padding: '16px',
+                        borderRadius: '6px',
+                        fontFamily: 'Consolas, Monaco, monospace',
+                        fontSize: '0.85rem',
+                        lineHeight: '1.4',
+                        overflowX: 'auto',
+                        whiteSpace: 'pre-wrap',
+                        border: '1px solid #333'
+                      }}>
+                        {ans.code}
+                      </div>
+                    ) : (
+                      <span className="text-muted" style={{ fontSize: '0.85rem', fontStyle: 'italic' }}>No code submitted.</span>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    {[
+                      { key: 'A', text: q.option_a },
+                      { key: 'B', text: q.option_b },
+                      { key: 'C', text: q.option_c },
+                      { key: 'D', text: q.option_d }
+                    ].map(opt => {
+                      const isChosen = ans === opt.key;
+                      const isCorrect = q.correct_option === opt.key;
+                      let borderColor = 'var(--color-border)';
+                      let background = 'transparent';
+                      
+                      if (isChosen) {
+                        borderColor = isCorrect ? '#22c55e' : '#ef4444';
+                        background = isCorrect ? 'rgba(34, 197, 94, 0.08)' : 'rgba(239, 68, 68, 0.08)';
+                      } else if (isCorrect) {
+                        borderColor = '#22c55e';
+                        background = 'rgba(34, 197, 94, 0.04)';
+                      }
+
+                      return (
+                        <div key={opt.key} style={{
+                          border: `1px solid ${borderColor}`,
+                          borderRadius: '6px',
+                          padding: '10px 14px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          background,
+                          fontSize: '0.9rem'
+                        }}>
+                          <span style={{
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            background: isChosen ? (isCorrect ? '#22c55e' : '#ef4444') : 'var(--color-border)',
+                            color: isChosen ? '#000' : 'var(--color-text-primary)'
+                          }}>{opt.key}</span>
+                          <span style={{ color: 'var(--color-text-primary)' }}>{opt.text}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
