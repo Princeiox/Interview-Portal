@@ -369,3 +369,85 @@ def reattempt_test(
     db.refresh(assignment)
     return assignment
 
+
+@router.delete("/assignments/{candidate_test_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_assignment(
+    candidate_test_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+):
+    """
+    Delete a test assignment.
+    """
+    assignment = db.query(models.CandidateTest).filter(models.CandidateTest.id == candidate_test_id).first()
+    if not assignment:
+        raise HTTPException(status_code=404, detail="Test assignment not found")
+        
+    db.delete(assignment)
+    db.commit()
+    return None
+
+
+@router.put("/{test_id}", response_model=schemas.TestResponse)
+def update_test(
+    test_id: int,
+    test_in: schemas.TestCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_admin_user),
+):
+    """
+    Update an MCQ test and its questions.
+    Only accessible by Admin.
+    """
+    db_test = db.query(models.Test).filter(models.Test.id == test_id).first()
+    if not db_test:
+        raise HTTPException(status_code=404, detail="Test not found")
+        
+    if not test_in.questions:
+        raise HTTPException(status_code=400, detail="A test must contain at least one question.")
+        
+    # Update test metadata
+    db_test.title = test_in.title
+    db_test.description = test_in.description
+    db_test.duration = test_in.duration
+    
+    # Delete existing questions
+    db.query(models.Question).filter(models.Question.test_id == test_id).delete()
+    
+    # Add new questions
+    for q in test_in.questions:
+        db_question = models.Question(
+            test_id=db_test.id,
+            question_text=q.question_text.strip(),
+            question_type=q.question_type or "MCQ",
+            option_a=q.option_a.strip() if q.option_a else None,
+            option_b=q.option_b.strip() if q.option_b else None,
+            option_c=q.option_c.strip() if q.option_c else None,
+            option_d=q.option_d.strip() if q.option_d else None,
+            correct_option=q.correct_option.strip().upper() if q.correct_option else None,
+        )
+        db.add(db_question)
+        
+    db.commit()
+    db.refresh(db_test)
+    return db_test
+
+
+@router.delete("/{test_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_test(
+    test_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_admin_user),
+):
+    """
+    Delete a test.
+    Only accessible by Admin.
+    """
+    test = db.query(models.Test).filter(models.Test.id == test_id).first()
+    if not test:
+        raise HTTPException(status_code=404, detail="Test not found")
+        
+    db.delete(test)
+    db.commit()
+    return None
+

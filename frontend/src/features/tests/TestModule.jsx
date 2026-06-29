@@ -33,6 +33,14 @@ export default function TestModule() {
   const [assignments, setAssignments] = useState([]);
   const [selectedAssignmentForViewer, setSelectedAssignmentForViewer] = useState(null);
 
+  // Edit Test states
+  const [editingTest, setEditingTest] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editDuration, setEditDuration] = useState(30);
+  const [editQuestions, setEditQuestions] = useState([]);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
   // Test creation form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -148,6 +156,93 @@ export default function TestModule() {
       fetchAssignments();
     } catch (err) {
       toast.showError('Failed to reset test: ' + (err.message || err));
+    }
+  };
+
+  const handleDeleteTest = async (testId) => {
+    if (!window.confirm('Are you sure you want to delete this test? This will also delete all associated questions and candidates\' test assignments! This action cannot be undone.')) {
+      return;
+    }
+    try {
+      await api.delete(`/tests/${testId}`);
+      toast.showSuccess('Test deleted successfully!');
+      fetchTests();
+      fetchAssignments();
+    } catch (err) {
+      toast.showError('Failed to delete test: ' + (err.response?.data?.detail || err.message || err));
+    }
+  };
+
+  const handleDeleteAssignment = async (assignmentId) => {
+    if (!window.confirm('Are you sure you want to delete this test assignment? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      await api.delete(`/tests/assignments/${assignmentId}`);
+      toast.showSuccess('Test assignment deleted successfully!');
+      fetchAssignments();
+    } catch (err) {
+      toast.showError('Failed to delete assignment: ' + (err.response?.data?.detail || err.message || err));
+    }
+  };
+
+  const handleStartEditTest = (test) => {
+    setEditingTest(test);
+    setEditTitle(test.title || '');
+    setEditDescription(test.description || '');
+    setEditDuration(test.duration || 30);
+    setEditQuestions(test.questions ? [...test.questions] : []);
+  };
+
+  const handleSaveEditTest = async (e) => {
+    e.preventDefault();
+    if (!editTitle.trim()) {
+      toast.showWarning('Please enter a test title.');
+      return;
+    }
+    if (editQuestions.length === 0) {
+      toast.showWarning('Please add at least one question.');
+      return;
+    }
+
+    for (let i = 0; i < editQuestions.length; i++) {
+      const q = editQuestions[i];
+      if (!q.question_text.trim()) {
+        toast.showWarning(`Please fill out the question text for Question ${i + 1}.`);
+        return;
+      }
+      if (q.question_type !== 'CODING') {
+        if (!q.option_a || !q.option_a.trim() || !q.option_b || !q.option_b.trim() || !q.option_c || !q.option_c.trim() || !q.option_d || !q.option_d.trim() || !q.correct_option) {
+          toast.showWarning(`Please fill out all options and correct answer for MCQ Question ${i + 1}.`);
+          return;
+        }
+      }
+    }
+
+    setIsSavingEdit(true);
+    try {
+      await api.put(`/tests/${editingTest.id}`, {
+        title: editTitle,
+        description: editDescription,
+        duration: parseInt(editDuration) || 30,
+        questions: editQuestions.map(q => ({
+          question_text: q.question_text,
+          question_type: q.question_type || "MCQ",
+          option_a: q.question_type === 'CODING' ? '' : q.option_a,
+          option_b: q.question_type === 'CODING' ? '' : q.option_b,
+          option_c: q.question_type === 'CODING' ? '' : q.option_c,
+          option_d: q.question_type === 'CODING' ? '' : q.option_d,
+          correct_option: q.question_type === 'CODING' ? '' : q.correct_option,
+        }))
+      });
+      toast.showSuccess('Test updated successfully!');
+      setEditingTest(null);
+      fetchTests();
+      fetchAssignments();
+    } catch (err) {
+      toast.showError('Update failed: ' + (err.response?.data?.detail || err.message || err));
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -917,7 +1012,68 @@ export default function TestModule() {
           </div>
         </div>
 
-        {/* Row 2: Assignments List */}
+        {/* Row 2: Created Tests Library */}
+        <div className="card created-tests-card" style={{ marginBottom: '24px' }}>
+          <h2 className="section-title">Created Tests Library</h2>
+          {isLoadingTests ? (
+            <div className="loading-container">
+              <div className="spinner" />
+            </div>
+          ) : tests.length === 0 ? (
+            <div className="empty-state">
+              <ClipboardList size={48} className="empty-icon" />
+              <p>No tests created yet. Use the form above to upload or create one.</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="assignments-table">
+                <thead>
+                  <tr>
+                    <th>Test Title</th>
+                    <th>Description</th>
+                    <th>Duration</th>
+                    <th>Questions</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tests.map((test) => (
+                    <tr key={test.id}>
+                      <td><strong style={{ color: 'var(--color-text-primary)' }}>{test.title}</strong></td>
+                      <td>
+                        <span style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
+                          {test.description || 'No description provided.'}
+                        </span>
+                      </td>
+                      <td><span>{test.duration} mins</span></td>
+                      <td><span>{test.questions?.length || 0} questions</span></td>
+                      <td>
+                        <div className="actions-cell" style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            className="btn btn-sm btn-outline test-action-btn"
+                            style={{ color: 'var(--color-primary)', borderColor: 'var(--color-primary)' }}
+                            onClick={() => handleStartEditTest(test)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline test-action-btn"
+                            style={{ color: '#ef4444', borderColor: '#ef4444' }}
+                            onClick={() => handleDeleteTest(test.id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Row 3: Assignments List */}
         <div className="card test-assignments-card">
           <h2 className="section-title">Active Test Assignments</h2>
 
@@ -1055,6 +1211,14 @@ export default function TestModule() {
                                 <RotateCcw size={14} /> Re-attempt
                               </button>
                             )}
+                            <button
+                              className="btn btn-sm btn-outline test-action-btn"
+                              title="Delete Test Assignment"
+                              onClick={() => handleDeleteAssignment(item.id)}
+                              style={{ color: '#ef4444', borderColor: '#ef4444' }}
+                            >
+                              <Trash2 size={14} /> Delete
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -1071,7 +1235,236 @@ export default function TestModule() {
             onClose={() => setSelectedAssignmentForViewer(null)}
           />
         )}
+        {editingTest && (
+          <EditTestModal
+            test={editingTest}
+            title={editTitle}
+            setTitle={setEditTitle}
+            description={editDescription}
+            setDescription={setEditDescription}
+            duration={editDuration}
+            setDuration={setEditDuration}
+            questions={editQuestions}
+            setQuestions={setEditQuestions}
+            onSave={handleSaveEditTest}
+            onClose={() => setEditingTest(null)}
+            isSaving={isSavingEdit}
+          />
+        )}
       </main>
+    </div>
+  );
+}
+
+function EditTestModal({ test, title, setTitle, description, setDescription, duration, setDuration, questions, setQuestions, onSave, onClose, isSaving }) {
+  if (!test) return null;
+
+  const handleAddQuestion = () => {
+    setQuestions([
+      ...questions,
+      { question_text: '', question_type: 'MCQ', option_a: '', option_b: '', option_c: '', option_d: '', correct_option: 'A' }
+    ]);
+  };
+
+  const handleRemoveQuestion = (index) => {
+    const updated = questions.filter((_, i) => i !== index);
+    setQuestions(updated);
+  };
+
+  const handleQuestionChange = (index, field, value) => {
+    const updated = [...questions];
+    updated[index][field] = value;
+    setQuestions(updated);
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 9999 }}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '850px', width: '95%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)', padding: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--color-border)', paddingBottom: '12px' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: 'var(--color-text-primary)' }}>Edit Test: {test.title}</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '1.5rem', fontWeight: 'bold' }}>×</button>
+        </div>
+
+        <form onSubmit={onSave} className="test-form">
+          <div className="form-group">
+            <label className="form-label" htmlFor="edit-test-title">Test Title*</label>
+            <input
+              id="edit-test-title"
+              type="text"
+              className="form-input"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="edit-test-desc">Description (Optional)</label>
+            <textarea
+              id="edit-test-desc"
+              className="form-input form-textarea"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="edit-test-duration">Duration (Minutes)*</label>
+            <input
+              id="edit-test-duration"
+              type="number"
+              min="1"
+              className="form-input"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="manual-questions-section" style={{ marginTop: '24px' }}>
+            <h3 className="section-subtitle" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>Questions ({questions.length})</span>
+            </h3>
+            {questions.map((q, idx) => (
+              <div key={idx} className="manual-question-card" style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                <div className="question-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span className="question-number" style={{ fontWeight: 700, color: 'var(--color-text-secondary)' }}>Question {idx + 1}</span>
+                  {questions.length > 1 && (
+                    <button
+                      type="button"
+                      className="btn-remove-question"
+                      onClick={() => handleRemoveQuestion(idx)}
+                      title="Remove Question"
+                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: q.question_type === 'CODING' ? '2.2fr 0.8fr' : '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">Question Text*</label>
+                    <textarea
+                      className="form-input question-text-input"
+                      value={q.question_text}
+                      onChange={(e) => handleQuestionChange(idx, 'question_text', e.target.value)}
+                      required
+                      style={{ height: q.question_type === 'CODING' ? '120px' : '42px', minHeight: q.question_type === 'CODING' ? '120px' : '42px', paddingTop: '10px' }}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">Question Type</label>
+                    <select
+                      className="form-select"
+                      value={q.question_type || 'MCQ'}
+                      onChange={(e) => {
+                        const type = e.target.value;
+                        handleQuestionChange(idx, 'question_type', type);
+                        if (type === 'CODING') {
+                          handleQuestionChange(idx, 'option_a', '');
+                          handleQuestionChange(idx, 'option_b', '');
+                          handleQuestionChange(idx, 'option_c', '');
+                          handleQuestionChange(idx, 'option_d', '');
+                          handleQuestionChange(idx, 'correct_option', '');
+                        } else {
+                          handleQuestionChange(idx, 'correct_option', 'A');
+                        }
+                      }}
+                      style={{ height: '42px' }}
+                    >
+                      <option value="MCQ">Multiple Choice (MCQ)</option>
+                      <option value="CODING">Coding Question</option>
+                    </select>
+                  </div>
+                </div>
+
+                {(!q.question_type || q.question_type === 'MCQ') && (
+                  <>
+                    <div className="options-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Option A*</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={q.option_a || ''}
+                          onChange={(e) => handleQuestionChange(idx, 'option_a', e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Option B*</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={q.option_b || ''}
+                          onChange={(e) => handleQuestionChange(idx, 'option_b', e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Option C*</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={q.option_c || ''}
+                          onChange={(e) => handleQuestionChange(idx, 'option_c', e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label">Option D*</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={q.option_d || ''}
+                          onChange={(e) => handleQuestionChange(idx, 'option_d', e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-group correct-option-group" style={{ marginTop: '12px', margin: 0 }}>
+                      <label className="form-label">Correct Option*</label>
+                      <select
+                        className="form-select"
+                        value={q.correct_option || 'A'}
+                        onChange={(e) => handleQuestionChange(idx, 'correct_option', e.target.value)}
+                        required
+                      >
+                        <option value="A">Option A</option>
+                        <option value="B">Option B</option>
+                        <option value="C">Option C</option>
+                        <option value="D">Option D</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+
+            <button
+              type="button"
+              className="btn btn-outline btn-block add-question-btn"
+              onClick={handleAddQuestion}
+              style={{ marginBottom: '20px' }}
+            >
+              <Plus size={16} /> Add Question
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--color-border)', paddingTop: '16px', marginTop: '24px' }}>
+            <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSaving}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
