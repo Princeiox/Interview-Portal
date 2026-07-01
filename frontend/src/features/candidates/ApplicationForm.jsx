@@ -417,9 +417,9 @@ export default function ApplicationForm() {
       <header className="app-form-header">
         <div className="app-form-header-content section-header-row">
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }} onClick={() => navigate(isEditMode ? `/candidates/${id}` : '/home')}>
-              <ArrowLeft size={24} />
-            </div>
+            <button className="icon-btn form-back-btn" onClick={() => navigate(isEditMode ? `/candidates/${id}` : '/home')}>
+              <ArrowLeft size={20} />
+            </button>
             <div>
               <h1 style={{ margin: 0, fontSize: '1.25rem' }}>{isEditMode ? 'Edit Candidate' : 'Pre Interview Application'}</h1>
               <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>{isEditMode ? (form.full_name || 'Candidate') : 'Eulogik'}</p>

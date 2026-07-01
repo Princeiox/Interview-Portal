@@ -324,8 +324,14 @@
   color: var(--color-primary);
 }
 
+
+
 /* ── Responsive ───────────────────────────────────────────────── */
 @media (max-width: 640px) {
+  .form-back-btn {
+    display: none !important;
+  }
+
   .app-form-section {
     padding: 20px 16px;
   }

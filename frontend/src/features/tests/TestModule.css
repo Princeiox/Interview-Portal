@@ -25,8 +25,8 @@
 }
 
 .test-module-title {
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--color-text-primary);
   letter-spacing: -0.5px;
 }
@@ -244,10 +244,7 @@
   gap: 8px;
 }
 
-.icon-btn {
-  padding: 6px 12px;
-  font-size: 0.75rem;
-}
+
 
 .empty-state {
   display: flex;
@@ -438,16 +435,86 @@
   padding: 16px;
 }
 
-.test-action-btn {
-  width: auto !important;
-  height: auto !important;
-  min-width: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  padding: 6px 12px !important;
-  font-size: 0.75rem !important;
-  white-space: nowrap !important;
+
+
+.question-grid-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
 }
+
+.question-grid-row.coding-type {
+  grid-template-columns: 2.2fr 0.8fr;
+}
+
+@media (max-width: 768px) {
+  .test-module-header {
+    padding: 12px 16px;
+  }
+
+  .test-module-header-content {
+    display: grid !important;
+    grid-template-columns: auto 1fr auto !important;
+    align-items: center !important;
+    gap: 16px !important;
+  }
+
+  .test-module-header-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    grid-column: 1 / span 2;
+  }
+
+  .test-module-title {
+    font-size: 1.125rem !important;
+    margin: 0;
+  }
+
+  .test-module-header-actions {
+    grid-column: 3;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+
+  .user-badge {
+    display: none !important;
+  }
+
+  .test-module-main {
+    padding: 20px 12px;
+    gap: 20px;
+  }
+
+  .card-header-with-action {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .card-header-with-action > button,
+  .card-header-with-action > div {
+    width: 100%;
+  }
+
+  .test-module-card,
+  .test-assignments-card {
+    padding: 16px 12px;
+  }
+
+  .actions-cell {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+
+
+  .question-grid-row,
+  .question-grid-row.coding-type {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 

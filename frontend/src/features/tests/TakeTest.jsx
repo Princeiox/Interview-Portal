@@ -314,7 +314,6 @@ export default function TakeTest() {
             </div>
             <div className="take-test-meta">
               <span className="candidate-greeting">Candidate: <strong>{testData?.candidate_name}</strong></span>
-              <ThemeToggle />
             </div>
           </div>
         </header>
@@ -330,10 +329,6 @@ export default function TakeTest() {
             </div>
             
             <div className="instructions-content">
-              <div className="test-details-banner">
-                <h3>{testData?.test_title}</h3>
-                {testData?.test_description && <p className="test-instructions-desc">{testData?.test_description}</p>}
-              </div>
               
               <div className="test-meta-grid">
                 <div className="meta-item">
@@ -347,21 +342,22 @@ export default function TakeTest() {
               </div>
 
               <div className="instructions-sections-wrapper">
+                {questions.some(q => q.question_type === 'CODING') && (
+                  <div className="rules-section-block critical" style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                    <h4 style={{ color: '#d97706', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
+                      ⚠️ Laptop / Desktop Recommended
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-text-primary)', lineHeight: '1.5' }}>
+                      This assessment contains coding questions. We recommend you to use a laptop or desktop for a better experience.
+                    </p>
+                  </div>
+                )}
                 <div className="rules-section-block">
                   <h4>💡 System & Environment Requirements</h4>
                   <ul>
                     <li>Use a modern web browser (Google Chrome, Firefox, or Safari are recommended).</li>
                     <li>Ensure you have a stable high-speed internet connection to prevent loading failures.</li>
                     <li>Do not close or reload the browser window during the assessment.</li>
-                  </ul>
-                </div>
-
-                <div className="rules-section-block critical">
-                  <h4>⚠️ Anti-Cheating & Activity Monitoring Policy</h4>
-                  <ul>
-                    <li>This assessment is strictly monitored. <strong>Tab switching, window resizing, or navigating away</strong> is prohibited.</li>
-                    <li><strong>First Violation:</strong> A warning message will overlay the screen.</li>
-                    <li><strong>Second Violation:</strong> The system will <strong>automatically submit the test immediately</strong>, saving whatever progress you have made.</li>
                   </ul>
                 </div>
 
@@ -384,7 +380,7 @@ export default function TakeTest() {
                     onChange={(e) => setAgreedToTerms(e.target.checked)} 
                   />
                   <span className="consent-checkbox-text">
-                    I acknowledge that I have read the above guidelines. I understand the rules regarding tab switching and agree to start this timed assessment.
+                    I acknowledge that I have read the above guidelines and agree to start this timed assessment.
                   </span>
                 </label>
               </div>
@@ -408,6 +404,16 @@ export default function TakeTest() {
   const selectedOption = answers[currentQuestion.id];
   const isCoding = currentQuestion.question_type === 'CODING' || (!currentQuestion.option_a && !currentQuestion.option_b && !currentQuestion.option_c && !currentQuestion.option_d);
 
+  const attemptedCount = Object.keys(answers).filter(key => {
+    const ans = answers[key];
+    if (!ans) return false;
+    if (typeof ans === 'object') {
+      return !!ans.code && ans.code.trim().length > 0;
+    }
+    return !!ans;
+  }).length;
+  const leftCount = questions.length - attemptedCount;
+
   return (
     <div className="take-test-page">
       <header className="take-test-header">
@@ -417,10 +423,6 @@ export default function TakeTest() {
             <span className="brand-text">Eulogik Assessment Portal</span>
           </div>
           <div className="take-test-meta">
-            <div className="test-timer-badge">
-              <Clock size={16} />
-              <span>{formatTime(timeLeft)}</span>
-            </div>
             <span className="candidate-greeting">Candidate: <strong>{testData?.candidate_name}</strong></span>
             <ThemeToggle />
           </div>
@@ -431,10 +433,6 @@ export default function TakeTest() {
         {/* Progress Bar & Header info */}
         <div className="test-progress-section card">
           <div className="test-progress-info">
-            <div className="test-progress-title-block">
-              <h1 className="take-test-title">{testData?.test_title}</h1>
-              {testData?.test_description && <p className="take-test-desc">{testData?.test_description}</p>}
-            </div>
             <div className="test-header-stats">
               <div className="test-timer-badge large">
                 <Clock size={18} />
@@ -586,7 +584,7 @@ export default function TakeTest() {
             <div className="wizard-navigation" style={{ display: 'flex', justifyContent: questions.length > 1 ? 'space-between' : 'flex-end', alignItems: 'center' }}>
               {questions.length > 1 && (
                 <button
-                  className="btn btn-outline"
+                  className="btn btn-primary"
                   onClick={handlePrev}
                   disabled={currentIdx === 0}
                 >
@@ -626,6 +624,11 @@ export default function TakeTest() {
                   <Send size={16} /> {isSubmitting ? 'Submitting...' : 'Submit Test'}
                 </button>
               )}
+            </div>
+
+            <div className="wizard-status-bar" style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--color-border-light)', fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+              <span>Attempted: <span style={{ color: 'var(--color-primary)', marginLeft: '4px' }}>{attemptedCount}</span></span>
+              <span>Left: <span style={{ color: '#ef4444', marginLeft: '4px' }}>{leftCount}</span></span>
             </div>
           </div>
         )}

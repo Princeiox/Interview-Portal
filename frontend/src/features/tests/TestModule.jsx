@@ -535,10 +535,10 @@ export default function TestModule() {
   return (
     <div className="test-module-page">
       <header className="test-module-header">
-        <div className="test-module-header-content">
+        <div className="test-module-header-content container">
           <div className="test-module-header-left">
-            <button className="btn btn-outline back-btn" onClick={() => navigate('/home')}>
-              <ArrowLeft size={18} />
+            <button className="icon-btn" onClick={() => navigate('/home')}>
+              <ArrowLeft size={20} />
             </button>
             <h1 className="test-module-title">Test Management Module</h1>
           </div>
@@ -713,16 +713,16 @@ export default function TestModule() {
                           )}
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: q.question_type === 'CODING' ? '2.2fr 0.8fr' : '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                        <div className={`question-grid-row ${q.question_type === 'CODING' ? 'coding-type' : ''}`}>
                           <div className="form-group" style={{ margin: 0 }}>
                             <label className="form-label">Question Text*</label>
-                            <textarea
+                            <AutoResizeTextarea
                               className="form-input question-text-input"
                               placeholder="Type the question here..."
                               value={q.question_text}
                               onChange={(e) => handleQuestionChange(idx, 'question_text', e.target.value)}
                               required
-                              style={{ height: q.question_type === 'CODING' ? '120px' : '42px', minHeight: q.question_type === 'CODING' ? '120px' : '42px', paddingTop: '10px' }}
+                              style={{ minHeight: q.question_type === 'CODING' ? '120px' : '42px', paddingTop: '10px' }}
                             />
                           </div>
 
@@ -1256,6 +1256,33 @@ export default function TestModule() {
   );
 }
 
+function AutoResizeTextarea({ value, onChange, placeholder, className, required, style }) {
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={className}
+      required={required}
+      style={{
+        ...style,
+        overflowY: 'hidden',
+        resize: 'vertical'
+      }}
+    />
+  );
+}
+
 function EditTestModal({ test, title, setTitle, description, setDescription, duration, setDuration, questions, setQuestions, onSave, onClose, isSaving }) {
   if (!test) return null;
 
@@ -1342,15 +1369,15 @@ function EditTestModal({ test, title, setTitle, description, setDescription, dur
                   )}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: q.question_type === 'CODING' ? '2.2fr 0.8fr' : '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div className={`question-grid-row ${q.question_type === 'CODING' ? 'coding-type' : ''}`}>
                   <div className="form-group" style={{ margin: 0 }}>
                     <label className="form-label">Question Text*</label>
-                    <textarea
+                    <AutoResizeTextarea
                       className="form-input question-text-input"
                       value={q.question_text}
                       onChange={(e) => handleQuestionChange(idx, 'question_text', e.target.value)}
                       required
-                      style={{ height: q.question_type === 'CODING' ? '120px' : '42px', minHeight: q.question_type === 'CODING' ? '120px' : '42px', paddingTop: '10px' }}
+                      style={{ minHeight: q.question_type === 'CODING' ? '120px' : '42px', paddingTop: '10px' }}
                     />
                   </div>
 

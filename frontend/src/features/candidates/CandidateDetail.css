@@ -240,10 +240,9 @@
 
 @media (max-width: 640px) {
   .detail-header {
-    padding: 20px 16px;
+    padding: 16px 12px;
     display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
+    flex-wrap: wrap !important;
     align-items: center !important;
     gap: 12px;
   }
@@ -258,6 +257,54 @@
 
   .detail-grid-2, .info-grid, .assessment-attributes-grid, .decision-grid {
     grid-template-columns: 1fr !important;
+  }
+
+  .detail-actions {
+    flex-wrap: wrap !important;
+    overflow-x: visible !important;
+    padding-bottom: 0 !important;
+    gap: 8px !important;
+  }
+
+  .detail-actions > button {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+  }
+
+  .tabs {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    gap: 8px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    padding: 8px 14px !important;
+    font-size: 0.8rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .assessment-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .card-footer-actions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    justify-content: flex-start !important;
+  }
+
+  .card-footer-actions > button {
+    flex: 1 1 auto !important;
+    justify-content: center !important;
   }
 }
 
@@ -368,6 +415,7 @@
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+  gap: 12px;
 }
 
 /* Modal Styles */

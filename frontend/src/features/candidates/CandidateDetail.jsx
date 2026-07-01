@@ -363,52 +363,51 @@ export default function CandidateDetail() {
                         )}
                       </div>
 
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         {isCompleted && (
                           <button
                             type="button"
-                            className="btn btn-sm btn-outline"
+                            className="btn btn-sm btn-outline test-action-btn"
                             title="View Responses"
                             onClick={() => setSelectedAssignmentForViewer(item)}
-                            style={{ padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--color-primary)', borderColor: 'var(--color-primary)' }}
+                            style={{ color: 'var(--color-primary)', borderColor: 'var(--color-primary)' }}
                           >
                             <FileText size={12} /> View Responses
                           </button>
                         )}
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline"
+                          className="btn btn-sm btn-outline test-action-btn"
                           title="Copy Link"
                           onClick={() => handleCopyLink(item.id)}
-                          style={{ padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
                         >
                           <Copy size={12} /> Copy Link
                         </button>
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline"
+                          className="btn btn-sm btn-outline test-action-btn"
                           title="Share on WhatsApp"
                           onClick={() => handleShareWhatsApp(item)}
-                          style={{ padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#25d366', borderColor: '#25d366' }}
+                          style={{ color: '#25d366', borderColor: '#25d366' }}
                         >
                           <Share2 size={12} /> WhatsApp
                         </button>
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline"
+                          className="btn btn-sm btn-outline test-action-btn"
                           title="Share via Email"
                           onClick={() => handleShareEmail(item)}
-                          style={{ padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#0284c7', borderColor: '#0284c7' }}
+                          style={{ color: '#0284c7', borderColor: '#0284c7' }}
                         >
                           <Mail size={12} /> Email
                         </button>
                         {user?.role === 'ADMIN' && (
                           <button
                             type="button"
-                            className="btn btn-sm btn-outline"
+                            className="btn btn-sm btn-outline test-action-btn"
                             title="Make Candidate Reattempt Test"
                             onClick={() => handleReattempt(item.id)}
-                            style={{ padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#ea580c', borderColor: '#ea580c' }}
+                            style={{ color: '#ea580c', borderColor: '#ea580c' }}
                           >
                             <RotateCcw size={12} /> Re-attempt
                           </button>

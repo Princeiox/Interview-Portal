@@ -767,3 +767,97 @@
   max-width: 1550px !important;
   width: 96% !important;
 }
+
+/* Responsive Mobile View Adjustments */
+@media (max-width: 650px) {
+  .take-test-header {
+    padding: 12px 16px;
+  }
+
+  .take-test-header-content {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .take-test-brand {
+    justify-content: center;
+  }
+
+  .take-test-meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .candidate-greeting {
+    font-size: 0.8rem;
+  }
+
+  .instructions-card {
+    padding: 24px 16px;
+  }
+
+  .instructions-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .test-meta-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .take-test-main {
+    margin-top: 16px;
+    padding: 0 12px;
+  }
+
+  .test-progress-info {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .test-header-stats {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .question-wizard-card {
+    padding: 20px 16px;
+  }
+
+  .options-grid {
+    gap: 8px;
+  }
+
+  .option-selector-btn {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .wizard-indicators {
+    display: none;
+  }
+
+  .take-test-success-wrapper {
+    padding: 20px 12px;
+  }
+
+  .success-card {
+    padding: 32px 16px;
+    gap: 20px;
+  }
+
+  .success-alert {
+    padding: 16px 12px;
+  }
+}
+
