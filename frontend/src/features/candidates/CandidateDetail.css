@@ -862,6 +862,16 @@
   .compare-right-pane {
     height: 600px;
   }
+
+  .skills-result-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .skill-result-row {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
 }
 
 
