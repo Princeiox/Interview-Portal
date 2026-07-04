@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import api from '@/api/axios';
-import { ArrowLeft, Search, Filter, ChevronRight, LogOut, Mail, Phone, Calendar, Download, LayoutGrid, User } from 'lucide-react';
+import { ArrowLeft, Search, Filter, ChevronRight, LogOut, Mail, Phone, Calendar, Download, LayoutGrid, User, Video } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import './CandidateDashboard.css';
 
@@ -354,6 +354,11 @@ export default function CandidateDashboard() {
                 <span className="meta-item"><Mail size={14} /> {c.email || 'N/A'}</span>
                 <span className="meta-item"><Phone size={14} /> {c.phone || 'N/A'}</span>
                 <span className="meta-item"><Calendar size={14} /> Applied on {formatDate(c.applied_at) || 'N/A'}</span>
+                {c.interview_date && (
+                  <span className="meta-item" style={{ color: 'var(--color-primary)', fontWeight: 600 }}>
+                    <Video size={14} style={{ color: 'var(--color-primary)' }} /> Scheduled: {new Date(c.interview_date).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
+                  </span>
+                )}
               </div>
 
               {(getInterviewerForRound(c, 'Tech Round') || getInterviewerForRound(c, 'HR Round') || (!(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'INTERVIEWER') && c.interviewer)) && (

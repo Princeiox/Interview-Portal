@@ -149,12 +149,16 @@ class CandidateUpdate(BaseModel):
     hobbies: Optional[str] = None
     status: Optional[CandidateStatus] = None
     interviewer_id: Optional[int] = None
+    interview_date: Optional[datetime] = None
+    meeting_link: Optional[str] = None
 
 class EmailSendRequest(BaseModel):
     """Schema for sending an email to a candidate."""
     subject: str
     body: str
     template_type: Optional[str] = None
+    interview_date: Optional[datetime] = None
+    meeting_link: Optional[str] = None
 
 # ── Assessment ────────────────────────────────────────────────────────────
 
@@ -234,6 +238,8 @@ class CandidateResponse(BaseModel):
     hobbies: Optional[str] = None
     photo_url: Optional[str] = None
     cv_url: Optional[str] = None
+    interview_date: Optional[datetime] = None
+    meeting_link: Optional[str] = None
     status: CandidateStatus
     applied_at: datetime
     interviewer_id: Optional[int] = None

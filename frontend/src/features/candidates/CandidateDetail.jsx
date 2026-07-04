@@ -12,7 +12,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import {
   ArrowLeft, Mail, Phone, MapPin, Briefcase, FileText,
-  Plus, Pencil, X, Star, User, GraduationCap, Users, Trash2, Columns, Copy, Share2, RotateCcw
+  Plus, Pencil, X, Star, User, GraduationCap, Users, Trash2, Columns, Copy, Share2, RotateCcw,
+  Video, RefreshCw, ExternalLink
 } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -535,6 +536,52 @@ export default function CandidateDetail() {
                     <span className={`badge ${getStatusBadgeClass(candidate.status)}`} style={{ display: 'inline-block', marginTop: '6px' }}>{candidate.status}</span>
                   </div>
                 </div>
+
+                {/* Scheduled Interview Section */}
+                {candidate.interview_date && (
+                  <div className="profile-section" style={{ backgroundColor: 'var(--color-bg-secondary)', padding: '16px', borderRadius: '8px', borderLeft: '4px solid var(--color-primary)', marginBottom: '20px' }}>
+                    <h3 className="section-title" style={{ border: 'none', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: 0 }}>
+                      <Video size={18} style={{ color: 'var(--color-primary)' }} /> Scheduled Interview
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div>
+                        <span className="info-label" style={{ display: 'block', marginBottom: '2px' }}>DATE & TIME</span>
+                        <span className="info-value" style={{ fontWeight: 600 }}>
+                          {new Date(candidate.interview_date).toLocaleString('en-IN', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                      {candidate.meeting_link && (
+                        <div>
+                          <span className="info-label" style={{ display: 'block', marginBottom: '2px' }}>GOOGLE MEET LINK</span>
+                          <a
+                            href={candidate.meeting_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-secondary"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '6px 12px',
+                              marginTop: '4px',
+                              textDecoration: 'none',
+                              fontSize: '0.9rem'
+                            }}
+                          >
+                            Join Meeting <ExternalLink size={14} />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Personal Details */}
                 <div className="profile-section">
@@ -1209,8 +1256,18 @@ function EmailModal({ isOpen, onClose, candidate, onSent }) {
   const [subject, setSubject] = useState('Interview Invitation');
   const [body, setBody] = useState('');
   const [templateType, setTemplateType] = useState('Default');
+  const [meetingType, setMeetingType] = useState('In-Person');
+  const [meetingLink, setMeetingLink] = useState('');
 
-  const getTemplate = (type, dateStr, candObj) => {
+  // Helper to generate a random Google Meet link
+  const generateMeetingLink = () => {
+    const part1 = Math.random().toString(36).substring(2, 5);
+    const part2 = Math.random().toString(36).substring(2, 6);
+    const part3 = Math.random().toString(36).substring(2, 5);
+    return `https://meet.google.com/${part1}-${part2}-${part3}`;
+  };
+
+  const getTemplate = (type, dateStr, candObj, meetType, meetLnk) => {
     const candName = candObj?.full_name || 'Candidate';
     const candPosition = candObj?.position_applied || '[Position Name]';
     const formattedDate = dateStr ? new Date(dateStr).toLocaleString('en-IN', {
@@ -1222,7 +1279,15 @@ function EmailModal({ isOpen, onClose, candidate, onSent }) {
       minute: '2-digit'
     }) : '[Select a Date]';
 
-    const baseTemplate = `Dear ${candName},\n\nCongratulations! 🎉 Your interview has been scheduled with Eulogik.\n\nDetails are as follows:\n\nDate & Time: ${formattedDate}\nLocation: Eulogik, 27 Noble Plaza, Zone-II, Maharana Pratap Nagar, Bhopal, Madhya Pradesh – 462011\n*Google Maps: https://maps.google.com/maps?cid=8753897592713204658\n\nImportant Instructions:\n\n1. Please report on time with your CV and a passport-size photo.\n2. If required, you may call on our landline number during working hours only.\n3. The location is easily available on Google Maps – kindly avoid calling us for navigation.\n4. If the given schedule doesn’t suit you, you may request one-time rescheduling through the invitation.\n5. We value your and our time – ensure you reach on time without fail.\n\nWe wish you all the very best!\n\nBest regards,\nEulogik`;
+    const locationText = meetType === 'Google Meet'
+      ? `Location: Online (Google Meet)\nMeeting Link: ${meetLnk || '[Generating Google Meet link...]'}`
+      : `Location: Eulogik, 27 Noble Plaza, Zone-II, Maharana Pratap Nagar, Bhopal, Madhya Pradesh – 462011\n*Google Maps: https://maps.google.com/maps?cid=8753897592713204658`;
+
+    const baseInstructions = meetType === 'Google Meet'
+      ? `1. Please join the online meeting on time.\n2. If required, you may call on our landline number during working hours only.\n3. Ensure you have a stable internet connection and a working webcam/microphone.\n4. We value your and our time – ensure you join on time without fail.`
+      : `1. Please report on time with your CV and a passport-size photo.\n2. If required, you may call on our landline number during working hours only.\n3. The location is easily available on Google Maps – kindly avoid calling us for navigation.\n4. We value your and our time – ensure you reach on time without fail.`;
+
+    const baseTemplate = `Dear ${candName},\n\nCongratulations! 🎉 Your interview has been scheduled with Eulogik.\n\nDetails are as follows:\n\nDate & Time: ${formattedDate}\n${locationText}\n\nImportant Instructions:\n\n${baseInstructions}\n\nWe wish you all the very best!\n\nBest regards,\nEulogik`;
 
     if (type === 'Tech Round') {
       return {
@@ -1248,20 +1313,28 @@ function EmailModal({ isOpen, onClose, candidate, onSent }) {
     };
   };
 
+  // Generate link if Google Meet selected
+  useEffect(() => {
+    if (meetingType === 'Google Meet') {
+      if (!meetingLink) {
+        setMeetingLink(generateMeetingLink());
+      }
+    } else {
+      setMeetingLink('');
+    }
+  }, [meetingType]);
+
   useEffect(() => {
     if (candidate) {
-      const { subject, body } = getTemplate(templateType, date, candidate);
+      const { subject, body } = getTemplate(templateType, date, candidate, meetingType, meetingLink);
       setSubject(subject);
       setBody(body);
     }
-  }, [candidate, templateType, date]);
+  }, [candidate, templateType, date, meetingType, meetingLink]);
 
   const handleDateChange = (e) => {
     const newDate = e.target.value;
     setDate(newDate);
-    const { subject, body } = getTemplate(templateType, newDate, candidate);
-    setSubject(subject);
-    setBody(body);
   };
 
   const handleTemplateChange = (e) => {
@@ -1269,10 +1342,24 @@ function EmailModal({ isOpen, onClose, candidate, onSent }) {
     setTemplateType(type);
   };
 
+  const handleMeetingTypeChange = (e) => {
+    setMeetingType(e.target.value);
+  };
+
+  const handleRegenerateLink = () => {
+    setMeetingLink(generateMeetingLink());
+  };
+
   const handleSend = async (e) => {
     e.preventDefault();
     try {
-      await api.post(`/candidates/${candidate.id}/send-email`, { subject, body, template_type: templateType });
+      await api.post(`/candidates/${candidate.id}/send-email`, {
+        subject,
+        body,
+        template_type: templateType,
+        interview_date: date ? new Date(date).toISOString() : null,
+        meeting_link: meetingType === 'Google Meet' ? meetingLink : null
+      });
       toast.success('Email sent successfully');
       if (onSent) onSent();
       onClose();
@@ -1301,10 +1388,43 @@ function EmailModal({ isOpen, onClose, candidate, onSent }) {
             </select>
           </div>
           {templateType !== 'Rejection' && (
-            <div className="form-group">
-              <label className="form-label">Interview Date & Time (Optional)</label>
-              <input type="datetime-local" className="form-input" value={date} onChange={handleDateChange} />
-            </div>
+            <>
+              <div className="form-group">
+                <label className="form-label">Interview Date & Time (Optional)</label>
+                <input type="datetime-local" className="form-input" value={date} onChange={handleDateChange} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Meeting Type</label>
+                <select className="form-input" value={meetingType} onChange={handleMeetingTypeChange}>
+                  <option value="In-Person">In-Person (Office)</option>
+                  <option value="Google Meet">Online (Google Meet)</option>
+                </select>
+              </div>
+              {meetingType === 'Google Meet' && (
+                <div className="form-group">
+                  <label className="form-label">Google Meet Link</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      required
+                      type="url"
+                      className="form-input"
+                      value={meetingLink}
+                      onChange={e => setMeetingLink(e.target.value)}
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={handleRegenerateLink}
+                      style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      title="Regenerate link"
+                    >
+                      <RefreshCw size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
           <div className="form-group">
             <label className="form-label">Subject</label>

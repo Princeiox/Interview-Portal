@@ -24,6 +24,10 @@ def init_db() -> None:
                 # Ensure questions table has question_type column
                 conn.execute(text("ALTER TABLE questions ADD COLUMN IF NOT EXISTS question_type VARCHAR DEFAULT 'MCQ'"))
 
+                # Ensure candidates table has interview_date and meeting_link columns
+                conn.execute(text("ALTER TABLE candidates ADD COLUMN IF NOT EXISTS interview_date TIMESTAMP WITH TIME ZONE"))
+                conn.execute(text("ALTER TABLE candidates ADD COLUMN IF NOT EXISTS meeting_link VARCHAR"))
+
                 # Drop NOT NULL constraints for options on PostgreSQL
                 conn.execute(text("ALTER TABLE questions ALTER COLUMN option_a DROP NOT NULL"))
                 conn.execute(text("ALTER TABLE questions ALTER COLUMN option_b DROP NOT NULL"))

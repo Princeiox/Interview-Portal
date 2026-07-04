@@ -114,6 +114,8 @@ class Candidate(Base):
     status = Column(SqlEnum(CandidateStatus, values_callable=lambda x: [e.value for e in x]), default=CandidateStatus.APPLIED)
     applied_at = Column(DateTime(timezone=True), server_default=func.now())
     interviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    interview_date = Column(DateTime(timezone=True), nullable=True)
+    meeting_link = Column(String, nullable=True)
 
     # Relationships
     interviewer = relationship("User", foreign_keys=[interviewer_id])

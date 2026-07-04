@@ -485,9 +485,17 @@ async def send_email_to_candidate(
         print("="*80 + "\n")
         email_status = "logged to server console (SMTP authentication/sending failed)"
         
+    if request.interview_date is not None:
+        candidate.interview_date = request.interview_date
+    if request.meeting_link is not None:
+        candidate.meeting_link = request.meeting_link
+        
     if request.template_type == "HR Round":
         candidate.status = models.CandidateStatus.EMAIL_SENT_HR
-        db.commit()
-        db.refresh(candidate)
+    elif request.template_type == "Tech Round":
+        candidate.status = models.CandidateStatus.HR_ROUND
+
+    db.commit()
+    db.refresh(candidate)
     return {"detail": f"Email {email_status}"}
 
