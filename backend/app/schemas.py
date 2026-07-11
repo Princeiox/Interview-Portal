@@ -172,6 +172,7 @@ class AssessmentCreate(BaseModel):
     overall_score: Optional[int] = None
     remarks: Optional[str] = None
     recommendation: Optional[str] = None
+    conducted_at: Optional[datetime] = None
 
 class AssessmentUpdate(BaseModel):
     """Schema for updating an interview assessment."""
@@ -182,6 +183,8 @@ class AssessmentUpdate(BaseModel):
     overall_score: Optional[int] = None
     remarks: Optional[str] = None
     recommendation: Optional[str] = None
+    conducted_at: Optional[datetime] = None
+
 
 class AssessmentResponse(BaseModel):
     """Schema for assessment data in API responses."""

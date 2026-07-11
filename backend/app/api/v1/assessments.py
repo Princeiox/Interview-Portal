@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List
 from app import models, schemas
@@ -29,6 +30,7 @@ def create_assessment(
         overall_score=data.overall_score,
         remarks=data.remarks,
         recommendation=data.recommendation,
+        conducted_at=data.conducted_at if data.conducted_at is not None else func.now(),
     )
     db.add(assessment)
     
@@ -98,6 +100,7 @@ def update_assessment(
     if data.overall_score is not None: assessment.overall_score = data.overall_score
     if data.remarks is not None: assessment.remarks = data.remarks
     if data.recommendation is not None: assessment.recommendation = data.recommendation
+    if data.conducted_at is not None: assessment.conducted_at = data.conducted_at
 
     # Update candidate status based on recommendation
     candidate = db.query(models.Candidate).filter(models.Candidate.id == assessment.candidate_id).first()

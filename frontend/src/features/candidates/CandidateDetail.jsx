@@ -13,7 +13,7 @@ import { useToast } from '@/context/ToastContext';
 import {
   ArrowLeft, Mail, Phone, MapPin, Briefcase, FileText,
   Plus, Pencil, X, Star, User, GraduationCap, Users, Trash2, Columns, Copy, Share2, RotateCcw,
-  Video, RefreshCw, ExternalLink
+  Video, RefreshCw, ExternalLink, Calendar
 } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -742,11 +742,16 @@ export default function CandidateDetail() {
                   return (
                     <div key={a.id} className="profile-section assessment-result-card">
                       <div className="assessment-header-row">
-                        <div><h3>{a.assessment_type}</h3><p className="sub-text">By {r.interviewerInfo?.name} on {formatDate(a.conducted_at)}</p></div>
+                        <div><h3>{a.assessment_type}</h3><p className="sub-text">By {r.interviewerInfo?.name}</p></div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <span className={`badge ${RECOMMENDATION_BADGES[a.recommendation]}`}>{RECOMMENDATION_LABELS[a.recommendation] || a.recommendation}</span>
                           <StarRating rating={a.overall_score / 2} size={14} cursor="default" />
                         </div>
+                      </div>
+
+                      <div style={{ marginTop: '8px', marginBottom: '12px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-secondary)' }}>
+                        <Calendar size={14} />
+                        <span>Interview Date: <strong>{formatDate(a.conducted_at)}</strong></span>
                       </div>
 
                       {r.customSkills?.length > 0 && (
@@ -1030,11 +1035,16 @@ export default function CandidateDetail() {
                 return (
                   <div key={a.id} className="profile-section assessment-result-card">
                     <div className="assessment-header-row">
-                      <div><h3>{a.assessment_type}</h3><p className="sub-text">By {r.interviewerInfo?.name} on {formatDate(a.conducted_at)}</p></div>
+                      <div><h3>{a.assessment_type}</h3><p className="sub-text">By {r.interviewerInfo?.name}</p></div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <span className={`badge ${RECOMMENDATION_BADGES[a.recommendation]}`}>{RECOMMENDATION_LABELS[a.recommendation] || a.recommendation}</span>
                         <StarRating rating={a.overall_score / 2} size={14} cursor="default" />
                       </div>
+                    </div>
+
+                    <div style={{ marginTop: '8px', marginBottom: '12px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-secondary)' }}>
+                      <Calendar size={14} />
+                      <span>Interview Date: <strong>{formatDate(a.conducted_at)}</strong></span>
                     </div>
 
                     {/* Technical Skills - Reordered above comments as per request */}
@@ -1129,12 +1139,21 @@ export default function CandidateDetail() {
  * ── SUB-COMPONENT: AssessmentForm ───────────────────────────────────────── (Restored to Standard UI)
  */
 function AssessmentForm({ type, initialData, onSubmit, currentUser }) {
+  const getTodayString = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   const [interviewer, setInterviewer] = useState({ name: '', dept: '' });
   const [stars, setStars] = useState({ education: 0, relevance: 0, attitude: 0, personality: 0, comprehension: 0, communication: 0, technical: 0 });
   const [customSkills, setCustomSkills] = useState([]);
   const [comments, setComments] = useState('');
   const [overall, setOverall] = useState(0);
   const [decision, setDecision] = useState('');
+  const [conductedAt, setConductedAt] = useState(getTodayString());
 
   useEffect(() => {
     if (initialData) {
@@ -1152,12 +1171,18 @@ function AssessmentForm({ type, initialData, onSubmit, currentUser }) {
               rec === 'HR Round' ? 'HR Round' :
                 rec === 'On Hold' || rec === 'Next Round' ? 'On Hold' : ''
         );
+        if (initialData.conducted_at) {
+          setConductedAt(new Date(initialData.conducted_at).toISOString().split('T')[0]);
+        }
       } catch (e) { console.error(e); }
-    } else if (currentUser) {
-      setInterviewer({
-        name: currentUser.name || '',
-        dept: currentUser.position || ''
-      });
+    } else {
+      setConductedAt(getTodayString());
+      if (currentUser) {
+        setInterviewer({
+          name: currentUser.name || '',
+          dept: currentUser.position || ''
+        });
+      }
     }
   }, [initialData, currentUser]);
 
@@ -1170,7 +1195,8 @@ function AssessmentForm({ type, initialData, onSubmit, currentUser }) {
       cultural_fit_score: stars.personality * 2,
       overall_score: overall * 2,
       remarks: JSON.stringify(payload),
-      recommendation: decision === 'Hired' ? 'Hire' : decision === 'Rejected' ? 'Reject' : decision === 'HR Round' ? 'HR Round' : 'On Hold'
+      recommendation: decision === 'Hired' ? 'Hire' : decision === 'Rejected' ? 'Reject' : decision === 'HR Round' ? 'HR Round' : 'On Hold',
+      conducted_at: conductedAt
     });
   };
 
@@ -1181,6 +1207,7 @@ function AssessmentForm({ type, initialData, onSubmit, currentUser }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
           <div className="form-group"><label className="form-label">Name *</label><input required className="form-input" value={interviewer.name} onChange={e => setInterviewer({ ...interviewer, name: e.target.value })} /></div>
           <div className="form-group"><label className="form-label">Designation</label><input className="form-input" value={interviewer.dept} onChange={e => setInterviewer({ ...interviewer, dept: e.target.value })} /></div>
+          <div className="form-group" style={{ gridColumn: 'span 2' }}><label className="form-label">Assessment Date *</label><input type="date" required className="form-input" value={conductedAt} onChange={e => setConductedAt(e.target.value)} /></div>
         </div>
       </section>
 
