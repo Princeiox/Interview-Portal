@@ -230,24 +230,29 @@ async def apply(
     """
     from datetime import date as date_type, datetime, timedelta, timezone
 
-    # Enforce constraint: candidate with same email, phone, and current address can only apply once a month
-    email_clean = email.strip()
-    phone_clean = phone.strip()
-    address_clean = current_address.strip() if current_address else ""
-    one_month_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    def normalize_email(e_val: str) -> str:
+        return e_val.strip().lower()
 
-    existing_candidate = db.query(models.Candidate).filter(
-        models.Candidate.email.ilike(email_clean),
-        models.Candidate.phone == phone_clean,
-        models.Candidate.current_address == address_clean,
-        models.Candidate.applied_at >= one_month_ago
-    ).first()
+    def normalize_phone(p_val: str) -> str:
+        digits = "".join(c for c in p_val if c.isdigit())
+        return digits[-10:] if len(digits) >= 10 else digits
 
-    if existing_candidate:
-        raise HTTPException(
-            status_code=400,
-            detail="We already have your application. Please try again after a few months."
-        )
+    email_norm = normalize_email(email)
+    phone_norm = normalize_phone(phone)
+    three_months_ago = datetime.now(timezone.utc) - timedelta(days=90)
+
+    # Fetch candidates applied in the last 3 months
+    recent_candidates = db.query(models.Candidate).filter(
+        models.Candidate.applied_at >= three_months_ago
+    ).all()
+
+    for cand in recent_candidates:
+        if (cand.email and normalize_email(cand.email) == email_norm) or \
+           (cand.phone and normalize_phone(cand.phone) == phone_norm):
+            raise HTTPException(
+                status_code=400,
+                detail="We already have your application with us. Please try again after 3 months."
+            )
 
     # Handle file uploads if provided
     photo_url = None
