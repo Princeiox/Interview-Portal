@@ -92,6 +92,20 @@ function getInterviewerForRound(candidate, roundType) {
   return assessment.interviewer?.name || null;
 }
 
+function getRoundDate(candidate, roundType) {
+  if (!candidate.assessments || candidate.assessments.length === 0) return null;
+
+  const assessment = candidate.assessments.find(a =>
+    a.assessment_type === roundType ||
+    (roundType === 'Tech Round' && a.assessment_type === 'TECH') ||
+    (roundType === 'HR Round' && a.assessment_type === 'HR')
+  );
+
+  if (!assessment || !assessment.conducted_at) return null;
+  const d = new Date(assessment.conducted_at);
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 export default function CandidateDashboard() {
   const navigate = useNavigate();
   const { user, requestLogout } = useAuth();
@@ -365,12 +379,12 @@ export default function CandidateDashboard() {
                 <div className="candidate-meta-rounds" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '10px' }}>
                   {getInterviewerForRound(c, 'Tech Round') && (
                     <span className="meta-item" style={{ margin: 0 }}>
-                      <User size={14} /> Tech by: {getInterviewerForRound(c, 'Tech Round')}
+                      <User size={14} /> Tech by: {getInterviewerForRound(c, 'Tech Round')}{getRoundDate(c, 'Tech Round') ? ` on ${getRoundDate(c, 'Tech Round')}` : ''}
                     </span>
                   )}
                   {getInterviewerForRound(c, 'HR Round') && (
                     <span className="meta-item" style={{ margin: 0 }}>
-                      <User size={14} /> HR by: {getInterviewerForRound(c, 'HR Round')}
+                      <User size={14} /> HR by: {getInterviewerForRound(c, 'HR Round')}{getRoundDate(c, 'HR Round') ? ` on ${getRoundDate(c, 'HR Round')}` : ''}
                     </span>
                   )}
                   {/* Fallback display if not admin/HR/interviewer and not has rounds but has assignment */}
