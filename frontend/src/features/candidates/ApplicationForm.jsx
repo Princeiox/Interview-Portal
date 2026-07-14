@@ -27,25 +27,6 @@ const emptyEducation = { type: 'College/University', degree: '', institution: ''
 const emptyWork = { company_name: '', position: '', from_date: '', to_date: '', responsibilities: '' };
 const emptyRef = { name: '', designation: '', company: '', email: '', phone: '' };
 
-const getSafeFile = (file) => {
-  return new Promise((resolve) => {
-    if (!file) {
-      resolve(null);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const buffer = e.target.result;
-      const safeFile = new File([buffer], file.name, { type: file.type });
-      resolve(safeFile);
-    };
-    reader.onerror = () => {
-      resolve(file);
-    };
-    reader.readAsArrayBuffer(file);
-  });
-};
-
 export default function ApplicationForm() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -247,8 +228,26 @@ export default function ApplicationForm() {
         e.target.value = '';
         return;
       }
-      setPhoto(file);
       setPhotoPreview(URL.createObjectURL(file));
+      setLoading(true);
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const buffer = event.target.result;
+          const blob = new Blob([buffer], { type: file.type });
+          setPhoto({ blob, name: file.name });
+        } catch (err) {
+          setPhoto({ blob: file, name: file.name });
+        } finally {
+          setLoading(false);
+        }
+      };
+      reader.onerror = () => {
+        setPhoto({ blob: file, name: file.name });
+        setLoading(false);
+      };
+      reader.readAsArrayBuffer(file);
     }
   };
 
@@ -260,8 +259,26 @@ export default function ApplicationForm() {
         e.target.value = '';
         return;
       }
-      setCv(file);
       setCvName(file.name);
+      setLoading(true);
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const buffer = event.target.result;
+          const blob = new Blob([buffer], { type: file.type });
+          setCv({ blob, name: file.name });
+        } catch (err) {
+          setCv({ blob: file, name: file.name });
+        } finally {
+          setLoading(false);
+        }
+      };
+      reader.onerror = () => {
+        setCv({ blob: file, name: file.name });
+        setLoading(false);
+      };
+      reader.readAsArrayBuffer(file);
     }
   };
 
@@ -386,13 +403,11 @@ export default function ApplicationForm() {
         }
       }
 
-      if (photo) {
-        const safePhoto = await getSafeFile(photo);
-        fd.append('photo', safePhoto);
+      if (photo && photo.blob) {
+        fd.append('photo', photo.blob, photo.name);
       }
-      if (cv) {
-        const safeCv = await getSafeFile(cv);
-        fd.append('cv', safeCv);
+      if (cv && cv.blob) {
+        fd.append('cv', cv.blob, cv.name);
       }
 
       if (isEditMode) {
