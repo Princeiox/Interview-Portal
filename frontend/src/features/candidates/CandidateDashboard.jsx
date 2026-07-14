@@ -17,12 +17,13 @@ import { ArrowLeft, Search, Filter, ChevronRight, LogOut, Mail, Phone, Calendar,
 import ThemeToggle from '@/components/ThemeToggle';
 import './CandidateDashboard.css';
 
-const STATUS_OPTIONS = ['All Status', 'Applied', 'Email sent for HR round', 'HR Round', 'Candidate not appeared', 'On Hold', 'Offered', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['All Status', 'Applied', 'Email sent for HR round', 'Email sent for Tech round', 'HR Round', 'Candidate not appeared', 'On Hold', 'Offered', 'Hired', 'Rejected'];
 
 function getStatusBadgeClass(status) {
   const map = {
     Applied: 'badge-applied',
     'Email sent for HR round': 'badge-email-sent-hr',
+    'Email sent for Tech round': 'badge-email-sent-tech',
     'HR Round': 'badge-hr-round',
     'Candidate not appeared': 'badge-not-appeared',
     'On Hold': 'badge-on-hold',

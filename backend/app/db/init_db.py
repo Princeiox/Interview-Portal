@@ -13,6 +13,7 @@ def init_db() -> None:
             try:
                 # Add new enum values if they don't exist
                 conn.execute(text("ALTER TYPE candidatestatus ADD VALUE IF NOT EXISTS 'Email sent for HR round'"))
+                conn.execute(text("ALTER TYPE candidatestatus ADD VALUE IF NOT EXISTS 'Email sent for Tech round'"))
                 conn.execute(text("ALTER TYPE candidatestatus ADD VALUE IF NOT EXISTS 'Candidate not appeared'"))
                 
                 # Migrate any existing candidates still in Screening or Interview status

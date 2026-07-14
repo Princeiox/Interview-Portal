@@ -21,6 +21,7 @@ class CandidateStatus(str, enum.Enum):
     """Represents the current stage of a candidate in the recruitment pipeline."""
     APPLIED = "Applied"
     EMAIL_SENT_HR = "Email sent for HR round"
+    EMAIL_SENT_TECH = "Email sent for Tech round"
     HR_ROUND = "HR Round"
     NOT_APPEARED = "Candidate not appeared"
     ON_HOLD = "On Hold"

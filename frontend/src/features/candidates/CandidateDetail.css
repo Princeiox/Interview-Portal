@@ -721,6 +721,12 @@
   border-color: rgba(125, 211, 252, 0.3) !important;
 }
 
+[data-theme="dark"] .status-select-dropdown.badge-email-sent-tech {
+  background-color: #155e75 !important;
+  color: #67e8f9 !important;
+  border-color: rgba(103, 232, 249, 0.3) !important;
+}
+
 [data-theme="dark"] .status-select-dropdown.badge-on-hold {
   background-color: #3f3f46 !important;
   color: #d4d4d8 !important;

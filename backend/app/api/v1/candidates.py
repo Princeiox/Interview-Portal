@@ -495,10 +495,11 @@ async def send_email_to_candidate(
     if request.meeting_link is not None:
         candidate.meeting_link = request.meeting_link
         
-    if request.template_type == "HR Round":
-        candidate.status = models.CandidateStatus.EMAIL_SENT_HR
-    elif request.template_type == "Tech Round":
-        candidate.status = models.CandidateStatus.HR_ROUND
+    if email_status == "sent successfully":
+        if request.template_type == "HR Round":
+            candidate.status = models.CandidateStatus.EMAIL_SENT_HR
+        elif request.template_type == "Tech Round":
+            candidate.status = models.CandidateStatus.EMAIL_SENT_TECH
 
     db.commit()
     db.refresh(candidate)
