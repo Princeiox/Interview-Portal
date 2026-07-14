@@ -27,6 +27,25 @@ const emptyEducation = { type: 'College/University', degree: '', institution: ''
 const emptyWork = { company_name: '', position: '', from_date: '', to_date: '', responsibilities: '' };
 const emptyRef = { name: '', designation: '', company: '', email: '', phone: '' };
 
+const getSafeFile = (file) => {
+  return new Promise((resolve) => {
+    if (!file) {
+      resolve(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const buffer = e.target.result;
+      const safeFile = new File([buffer], file.name, { type: file.type });
+      resolve(safeFile);
+    };
+    reader.onerror = () => {
+      resolve(file);
+    };
+    reader.readAsArrayBuffer(file);
+  });
+};
+
 export default function ApplicationForm() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -367,8 +386,14 @@ export default function ApplicationForm() {
         }
       }
 
-      if (photo) fd.append('photo', photo);
-      if (cv) fd.append('cv', cv);
+      if (photo) {
+        const safePhoto = await getSafeFile(photo);
+        fd.append('photo', safePhoto);
+      }
+      if (cv) {
+        const safeCv = await getSafeFile(cv);
+        fd.append('cv', safeCv);
+      }
 
       if (isEditMode) {
         await api.put(`/candidates/${id}`, fd);
