@@ -7,22 +7,23 @@
  */
 import axios from 'axios';
 
-let API = import.meta.env.VITE_API_URL ?? "";
+let API = import.meta.env.VITE_API_URL || "";
 
-// Dynamically adjust API url if accessed from a mobile phone / another device on the local network
-if (typeof window !== 'undefined' && API.includes('localhost') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    API = API.replace('localhost', window.location.hostname);
+// If in development mode and accessed from a mobile phone or another device, use the Vite dev server proxy
+// by making the API URL relative. This avoids CORS issues and Windows Firewall blockages.
+if (import.meta.env.DEV && typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    API = "";
 }
 
 const api = axios.create({
-    baseURL: API ? `${API}/api/v1` : '/api/v1',
+    baseURL: API ? API + '/api/v1' : '/api/v1',
 });
 
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+            config.headers.Authorization = 'Bearer ' + token;
         }
         return config;
     },
@@ -37,14 +38,14 @@ api.interceptors.response.use(
         return response;
     },
     (error) => {
-        if (error.response?.status === 401) {
+        if (error.response && error.response.status === 401) {
             localStorage.removeItem('token');
             if (window.location.pathname !== '/login') {
                 window.location.replace('/login');
             }
         }
         
-        if (error.response?.status === 413) {
+        if (error.response && error.response.status === 413) {
             error.message = 'The uploaded file or photo is too large. Please upload files smaller than 1.5MB.';
             return Promise.reject(error);
         }
@@ -56,7 +57,7 @@ api.interceptors.response.use(
             } else {
                 error.message = 'Server is offline or unreachable. Please try again later.';
             }
-        } else if (error.response?.data?.detail) {
+        } else if (error.response.data && error.response.data.detail) {
             const detail = error.response.data.detail;
             if (typeof detail === 'string') {
                 error.message = detail;
@@ -67,13 +68,13 @@ api.interceptors.response.use(
                     const niceField = typeof field === 'string' 
                         ? field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) 
                         : field;
-                    return `${niceField}: ${msg}`;
+                    return niceField + ': ' + msg;
                 }).join(', ');
             }
-        } else if (error.response?.data?.message) {
+        } else if (error.response.data && error.response.data.message) {
             error.message = error.response.data.message;
-        } else if (error.response?.statusText) {
-            error.message = `Server Error: ${error.response.statusText} (${error.response.status})`;
+        } else if (error.response.statusText) {
+            error.message = 'Server Error: ' + error.response.statusText + ' (' + error.response.status + ')';
         }
         
         return Promise.reject(error);
@@ -82,3 +83,4 @@ api.interceptors.response.use(
 
 export const API_BASE = API;
 export default api;
+
