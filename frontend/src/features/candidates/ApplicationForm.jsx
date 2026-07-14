@@ -27,6 +27,28 @@ const emptyEducation = { type: 'College/University', degree: '', institution: ''
 const emptyWork = { company_name: '', position: '', from_date: '', to_date: '', responsibilities: '' };
 const emptyRef = { name: '', designation: '', company: '', email: '', phone: '' };
 
+const base64ToBlob = (base64Data, contentType) => {
+  try {
+    const sliceSize = 512;
+    const byteCharacters = atob(base64Data.split(',')[1]);
+    const byteArrays = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      const slice = byteCharacters.slice(offset, offset + sliceSize);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+    return new Blob(byteArrays, { type: contentType });
+  } catch (e) {
+    console.error("Base64 conversion failed", e);
+    return null;
+  }
+};
+
 export default function ApplicationForm() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -233,21 +255,14 @@ export default function ApplicationForm() {
       
       const reader = new FileReader();
       reader.onload = (event) => {
-        try {
-          const buffer = event.target.result;
-          const blob = new Blob([buffer], { type: file.type });
-          setPhoto({ blob, name: file.name });
-        } catch (err) {
-          setPhoto({ blob: file, name: file.name });
-        } finally {
-          setLoading(false);
-        }
-      };
-      reader.onerror = () => {
-        setPhoto({ blob: file, name: file.name });
+        setPhoto({ base64: event.target.result, name: file.name, type: file.type });
         setLoading(false);
       };
-      reader.readAsArrayBuffer(file);
+      reader.onerror = () => {
+        toast.error('Failed to read photo file');
+        setLoading(false);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -264,21 +279,14 @@ export default function ApplicationForm() {
       
       const reader = new FileReader();
       reader.onload = (event) => {
-        try {
-          const buffer = event.target.result;
-          const blob = new Blob([buffer], { type: file.type });
-          setCv({ blob, name: file.name });
-        } catch (err) {
-          setCv({ blob: file, name: file.name });
-        } finally {
-          setLoading(false);
-        }
-      };
-      reader.onerror = () => {
-        setCv({ blob: file, name: file.name });
+        setCv({ base64: event.target.result, name: file.name, type: file.type });
         setLoading(false);
       };
-      reader.readAsArrayBuffer(file);
+      reader.onerror = () => {
+        toast.error('Failed to read CV/Resume file');
+        setLoading(false);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -403,11 +411,17 @@ export default function ApplicationForm() {
         }
       }
 
-      if (photo && photo.blob) {
-        fd.append('photo', photo.blob, photo.name);
+      if (photo && photo.base64) {
+        const blob = base64ToBlob(photo.base64, photo.type);
+        if (blob) {
+          fd.append('photo', blob, photo.name);
+        }
       }
-      if (cv && cv.blob) {
-        fd.append('cv', cv.blob, cv.name);
+      if (cv && cv.base64) {
+        const blob = base64ToBlob(cv.base64, cv.type);
+        if (blob) {
+          fd.append('cv', blob, cv.name);
+        }
       }
 
       if (isEditMode) {
