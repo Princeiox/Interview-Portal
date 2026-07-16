@@ -239,11 +239,11 @@ async def apply(
 
     email_norm = normalize_email(email)
     phone_norm = normalize_phone(phone)
-    three_months_ago = datetime.now(timezone.utc) - timedelta(days=90)
+    one_month_ago = datetime.now(timezone.utc) - timedelta(days=30)
 
-    # Fetch candidates applied in the last 3 months
+    # Fetch candidates applied in the last 1 month
     recent_candidates = db.query(models.Candidate).filter(
-        models.Candidate.applied_at >= three_months_ago
+        models.Candidate.applied_at >= one_month_ago
     ).all()
 
     for cand in recent_candidates:
@@ -251,7 +251,7 @@ async def apply(
            (cand.phone and normalize_phone(cand.phone) == phone_norm):
             raise HTTPException(
                 status_code=400,
-                detail="We already have your application with us. Please try again after 3 months."
+                detail="We already have your application with us. Please try again after 1 month."
             )
 
     # Handle file uploads if provided
