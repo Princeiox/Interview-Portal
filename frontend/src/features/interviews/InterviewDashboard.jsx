@@ -16,13 +16,14 @@ import '../candidates/CandidateDashboard.css';
 import ThemeToggle from '@/components/ThemeToggle';
 import ConfirmModal from '@/components/ConfirmModal';
 
-const STATUS_OPTIONS = ['All Status', 'Email sent for HR round', 'HR Round', 'Candidate not appeared', 'Applied', 'On Hold', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['All Status', 'Email sent for HR round', 'HR Round', 'Candidate not appeared', 'Applied', 'On Hold', 'Hired', 'Rejected', 'Candidate rejected the offer'];
 
 function getStatusBadgeClass(status) {
   const map = {
     Applied: 'badge-applied', 'Email sent for HR round': 'badge-email-sent-hr',
     'HR Round': 'badge-hr-round', 'Candidate not appeared': 'badge-not-appeared',
     'On Hold': 'badge-on-hold', Offered: 'badge-offered', Hired: 'badge-hired', Rejected: 'badge-rejected',
+    'Candidate rejected the offer': 'badge-candidate-rejected',
   };
   return map[status] || 'badge-applied';
 }

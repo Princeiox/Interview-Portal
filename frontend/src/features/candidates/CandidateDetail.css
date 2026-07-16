@@ -758,6 +758,12 @@
   border-color: rgba(252, 165, 165, 0.3) !important;
 }
 
+[data-theme="dark"] .status-select-dropdown.badge-candidate-rejected {
+  background-color: #7f1d1d !important;
+  color: #fca5a5 !important;
+  border-color: rgba(252, 165, 165, 0.3) !important;
+}
+
 .status-select-dropdown:hover {
   filter: brightness(0.95);
   transform: translateY(-1px);

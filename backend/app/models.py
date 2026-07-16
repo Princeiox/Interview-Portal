@@ -28,6 +28,7 @@ class CandidateStatus(str, enum.Enum):
     OFFERED = "Offered"
     HIRED = "Hired"
     REJECTED = "Rejected"
+    CANDIDATE_REJECTED = "Candidate rejected the offer"
 
 
 class AssessmentType(str, enum.Enum):

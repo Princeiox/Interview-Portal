@@ -15,6 +15,7 @@ def init_db() -> None:
                 conn.execute(text("ALTER TYPE candidatestatus ADD VALUE IF NOT EXISTS 'Email sent for HR round'"))
                 conn.execute(text("ALTER TYPE candidatestatus ADD VALUE IF NOT EXISTS 'Email sent for Tech round'"))
                 conn.execute(text("ALTER TYPE candidatestatus ADD VALUE IF NOT EXISTS 'Candidate not appeared'"))
+                conn.execute(text("ALTER TYPE candidatestatus ADD VALUE IF NOT EXISTS 'Candidate rejected the offer'"))
                 
                 # Migrate any existing candidates still in Screening or Interview status
                 conn.execute(text("UPDATE candidates SET status = 'Applied' WHERE status IN ('Screening', 'Interview')"))

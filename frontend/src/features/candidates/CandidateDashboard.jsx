@@ -17,7 +17,7 @@ import { ArrowLeft, Search, Filter, ChevronRight, LogOut, Mail, Phone, Calendar,
 import ThemeToggle from '@/components/ThemeToggle';
 import './CandidateDashboard.css';
 
-const STATUS_OPTIONS = ['All Status', 'Applied', 'Email sent for HR round', 'Email sent for Tech round', 'HR Round', 'Candidate not appeared', 'On Hold', 'Offered', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['All Status', 'Applied', 'Email sent for HR round', 'Email sent for Tech round', 'HR Round', 'Candidate not appeared', 'On Hold', 'Offered', 'Hired', 'Rejected', 'Candidate rejected the offer'];
 
 function getStatusBadgeClass(status) {
   const map = {
@@ -30,6 +30,7 @@ function getStatusBadgeClass(status) {
     Offered: 'badge-offered',
     Hired: 'badge-hired',
     Rejected: 'badge-rejected',
+    'Candidate rejected the offer': 'badge-candidate-rejected',
   };
   return map[status] || 'badge-applied';
 }

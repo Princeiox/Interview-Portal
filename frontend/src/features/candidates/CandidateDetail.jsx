@@ -19,7 +19,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import ConfirmModal from '@/components/ConfirmModal';
 import './CandidateDetail.css';
 
-const STATUS_OPTIONS = ['Applied', 'Email sent for HR round', 'Email sent for Tech round', 'HR Round', 'Candidate not appeared', 'On Hold', 'Offered', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['Applied', 'Email sent for HR round', 'Email sent for Tech round', 'HR Round', 'Candidate not appeared', 'On Hold', 'Offered', 'Hired', 'Rejected', 'Candidate rejected the offer'];
 const COMMON_SKILLS = ['Python', 'SQL', 'Fastapi', 'React', 'Node.js', 'AWS'];
 const HR_COMMON_SKILLS = ['Communication Skills', 'Confidence', 'Positive Attitude', 'Teamwork', 'Problem-Solving Ability', 'Adaptability', 'Professionalism', 'Cultural Fit', 'Career Motivation', 'Leadership Potential'];
 const RECOMMENDATION_LABELS = {
@@ -50,7 +50,8 @@ const getStatusBadgeClass = (s) => {
     'On Hold': 'badge-on-hold',
     Offered: 'badge-offered',
     Hired: 'badge-hired',
-    Rejected: 'badge-rejected'
+    Rejected: 'badge-rejected',
+    'Candidate rejected the offer': 'badge-candidate-rejected'
   };
   return m[s] || 'badge-applied';
 };

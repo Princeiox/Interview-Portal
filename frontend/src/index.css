@@ -342,6 +342,11 @@ a {
   color: #dc2626;
 }
 
+.badge-candidate-rejected {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
 /* Dark mode badge overrides */
 [data-theme="dark"] .badge-applied {
   background: rgba(59, 130, 246, 0.15);
@@ -384,6 +389,11 @@ a {
   color: #fca5a5;
 }
 
+[data-theme="dark"] .badge-candidate-rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
 /* ── Status Indicator Colors ───────────────────────────────────────── */
 .status-applied { color: #3b82f6; }
 .status-email-sent-hr { color: #0284c7; }
@@ -391,6 +401,7 @@ a {
 .status-offered { color: #10b981; }
 .status-hired { color: #10b981; }
 .status-rejected { color: #ef4444; }
+.status-candidate-rejected { color: #ef4444; }
 
 /* ── Toast Notifications ───────────────────────────────────────────── */
 .toast-container {
