@@ -57,6 +57,7 @@ export default function ApplicationForm() {
   const [loading, setLoading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [cvName, setCvName] = useState('');
+  const [cvUrl, setCvUrl] = useState(null);
   const [ageWarning, setAgeWarning] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [refPhoneErrors, setRefPhoneErrors] = useState({});
@@ -107,7 +108,10 @@ export default function ApplicationForm() {
           }
           if (data.references) setReferences(data.references);
           if (data.photo_url) setPhotoPreview(`${API_BASE}${data.photo_url}`);
-          if (data.cv_url) setCvName('Current CV');
+          if (data.cv_url) {
+            setCvName('Current CV');
+            setCvUrl(`${API_BASE}${data.cv_url}`);
+          }
 
           setForm({
             full_name: data.full_name || '',
@@ -275,6 +279,7 @@ export default function ApplicationForm() {
         return;
       }
       setCvName(file.name);
+      setCvUrl(URL.createObjectURL(file));
       setLoading(true);
       
       const reader = new FileReader();
@@ -306,6 +311,7 @@ export default function ApplicationForm() {
     e.stopPropagation();
     setCv(null);
     setCvName('');
+    setCvUrl(null);
     if (cvRef.current) cvRef.current.value = '';
   };
 
@@ -551,18 +557,49 @@ export default function ApplicationForm() {
                 <input ref={photoRef} type="file" accept="image/*" onChange={handlePhotoChange} hidden />
               </div>
 
-              <div className="upload-cv-area" onClick={() => cvRef.current.click()} style={{ position: 'relative', height: '140px', padding: '20px', boxSizing: 'border-box' }}>
+              <div className="upload-cv-area" onClick={cvName ? null : () => cvRef.current.click()} style={{ position: 'relative', height: '140px', padding: cvName ? '4px' : '20px', boxSizing: 'border-box', overflow: 'hidden', cursor: cvName ? 'default' : 'pointer' }}>
                 {cvName && (
-                  <button type="button" onClick={removeCv} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>
-                    <X size={14} />
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        cvRef.current.click();
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: '6px',
+                        left: '6px',
+                        background: 'var(--color-primary)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '2px 8px',
+                        fontSize: '0.7rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        zIndex: 20
+                      }}
+                    >
+                      Change
+                    </button>
+                    <button type="button" onClick={removeCv} style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>
+                      <X size={12} />
+                    </button>
+                  </>
                 )}
                 {cvName ? (
-                  <div className="upload-placeholder" style={{ padding: '20px' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📄</div>
-                    <span style={{ fontWeight: 600, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cvName}</span>
-                    <small style={{ color: 'var(--color-text-muted)' }}>Click to change</small>
-                  </div>
+                  cvName.toLowerCase().endsWith('.pdf') || (cvUrl && cvUrl.includes('.pdf')) || (cv && cv.type === 'application/pdf') ? (
+                    <div style={{ width: '100%', height: '100%' }}>
+                      <iframe src={cvUrl} title="CV Preview" className="cv-preview-iframe" style={{ width: '100%', height: '100%', border: 'none', borderRadius: '4px', background: 'white' }} />
+                    </div>
+                  ) : (
+                    <div className="upload-placeholder" style={{ padding: '10px', textAlign: 'center', cursor: 'pointer' }} onClick={() => cvRef.current.click()}>
+                      <div style={{ fontSize: '2rem', marginBottom: '4px' }}>📄</div>
+                      <span style={{ fontWeight: 600, fontSize: '0.8rem', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{cvName}</span>
+                      <small style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem' }}>Word doc (No preview). Click to change</small>
+                    </div>
+                  )
                 ) : (
                   <>
                     <Upload size={24} />
