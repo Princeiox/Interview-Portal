@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List
 from app import models, schemas
@@ -29,6 +30,7 @@ def create_assessment(
         overall_score=data.overall_score,
         remarks=data.remarks,
         recommendation=data.recommendation,
+        conducted_at=data.conducted_at if data.conducted_at is not None else func.now(),
     )
     db.add(assessment)
     
@@ -41,9 +43,9 @@ def create_assessment(
     elif rec == "HR Round":
         candidate.status = models.CandidateStatus.HR_ROUND
     elif rec in ["Next Round", "Interview"]:
-        candidate.status = models.CandidateStatus.INTERVIEW
+        candidate.status = models.CandidateStatus.HR_ROUND
     elif rec in ["On Hold", "Waitlist"]:
-        candidate.status = models.CandidateStatus.SCREENING
+        candidate.status = models.CandidateStatus.ON_HOLD
 
     # Unassign the interviewer after a round is submitted so a new one can be assigned for the next round
     candidate.interviewer_id = None
@@ -98,6 +100,7 @@ def update_assessment(
     if data.overall_score is not None: assessment.overall_score = data.overall_score
     if data.remarks is not None: assessment.remarks = data.remarks
     if data.recommendation is not None: assessment.recommendation = data.recommendation
+    if data.conducted_at is not None: assessment.conducted_at = data.conducted_at
 
     # Update candidate status based on recommendation
     candidate = db.query(models.Candidate).filter(models.Candidate.id == assessment.candidate_id).first()
@@ -110,10 +113,39 @@ def update_assessment(
         elif rec == "HR Round":
             candidate.status = models.CandidateStatus.HR_ROUND
         elif rec in ["Next Round", "Interview"]:
-            candidate.status = models.CandidateStatus.INTERVIEW
+            candidate.status = models.CandidateStatus.HR_ROUND
         elif rec in ["On Hold", "Waitlist"]:
-            candidate.status = models.CandidateStatus.SCREENING
+            candidate.status = models.CandidateStatus.ON_HOLD
 
     db.commit()
     db.refresh(assessment)
     return assessment
+
+
+@router.delete("/{assessment_id}")
+def delete_assessment(
+    assessment_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+):
+    """Delete a tech assessment."""
+    assessment = db.query(models.Assessment).filter(models.Assessment.id == assessment_id).first()
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+        
+
+    
+    # Authorization check
+    current_role_str = str(current_user.role).upper()
+    is_admin_or_hr = "ADMIN" in current_role_str or "HR" in current_role_str
+    is_owner = assessment.interviewer_id == current_user.id
+    
+    if not (is_admin_or_hr or is_owner):
+        raise HTTPException(
+            status_code=403, 
+            detail="Access Denied: You can only delete assessments that you have personally created."
+        )
+
+    db.delete(assessment)
+    db.commit()
+    return {"message": "Assessment deleted successfully"}

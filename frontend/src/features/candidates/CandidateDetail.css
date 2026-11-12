@@ -1,7 +1,7 @@
 .detail-page {
   min-height: 100vh;
   background: var(--color-bg);
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 24px 60px;
 }
@@ -40,7 +40,33 @@
   display: flex;
   gap: 10px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.detail-actions::-webkit-scrollbar {
+  height: 4px;
+}
+
+.detail-actions::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.detail-actions::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.detail-actions > button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.detail-actions::after {
+  content: "";
+  flex: 0 0 24px;
 }
 
 .detail-content {
@@ -214,10 +240,9 @@
 
 @media (max-width: 640px) {
   .detail-header {
-    padding: 20px 16px;
+    padding: 16px 12px;
     display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
+    flex-wrap: wrap !important;
     align-items: center !important;
     gap: 12px;
   }
@@ -232,6 +257,54 @@
 
   .detail-grid-2, .info-grid, .assessment-attributes-grid, .decision-grid {
     grid-template-columns: 1fr !important;
+  }
+
+  .detail-actions {
+    flex-wrap: wrap !important;
+    overflow-x: visible !important;
+    padding-bottom: 0 !important;
+    gap: 8px !important;
+  }
+
+  .detail-actions > button {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+  }
+
+  .tabs {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    gap: 8px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    padding: 8px 14px !important;
+    font-size: 0.8rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .assessment-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .card-footer-actions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    justify-content: flex-start !important;
+  }
+
+  .card-footer-actions > button {
+    flex: 1 1 auto !important;
+    justify-content: center !important;
   }
 }
 
@@ -342,6 +415,7 @@
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+  gap: 12px;
 }
 
 /* Modal Styles */
@@ -641,10 +715,16 @@
   border-color: rgba(147, 197, 253, 0.3) !important;
 }
 
-[data-theme="dark"] .status-select-dropdown.badge-screening {
-  background-color: #78350f !important;
-  color: #fbbf24 !important;
-  border-color: rgba(251, 191, 36, 0.3) !important;
+[data-theme="dark"] .status-select-dropdown.badge-email-sent-hr {
+  background-color: #075985 !important;
+  color: #7dd3fc !important;
+  border-color: rgba(125, 211, 252, 0.3) !important;
+}
+
+[data-theme="dark"] .status-select-dropdown.badge-email-sent-tech {
+  background-color: #155e75 !important;
+  color: #67e8f9 !important;
+  border-color: rgba(103, 232, 249, 0.3) !important;
 }
 
 [data-theme="dark"] .status-select-dropdown.badge-on-hold {
@@ -653,10 +733,10 @@
   border-color: rgba(212, 212, 216, 0.3) !important;
 }
 
-[data-theme="dark"] .status-select-dropdown.badge-interview {
-  background-color: #312e81 !important;
-  color: #a5b4fc !important;
-  border-color: rgba(165, 180, 252, 0.3) !important;
+[data-theme="dark"] .status-select-dropdown.badge-not-appeared {
+  background-color: #78350f !important;
+  color: #fbbf24 !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
 }
 
 [data-theme="dark"] .status-select-dropdown.badge-hr-round {
@@ -673,6 +753,12 @@
 }
 
 [data-theme="dark"] .status-select-dropdown.badge-rejected {
+  background-color: #7f1d1d !important;
+  color: #fca5a5 !important;
+  border-color: rgba(252, 165, 165, 0.3) !important;
+}
+
+[data-theme="dark"] .status-select-dropdown.badge-candidate-rejected {
   background-color: #7f1d1d !important;
   color: #fca5a5 !important;
   border-color: rgba(252, 165, 165, 0.3) !important;
@@ -787,6 +873,16 @@
   
   .compare-right-pane {
     height: 600px;
+  }
+
+  .skills-result-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .skill-result-row {
+    flex-wrap: wrap;
+    gap: 6px 12px;
   }
 }
 

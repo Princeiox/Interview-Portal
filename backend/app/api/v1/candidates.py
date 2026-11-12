@@ -13,6 +13,29 @@ from app import models, schemas
 from app.db.database import get_db
 from app.api.deps import get_current_active_user, get_admin_user
 from app.core.config import settings
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import asyncio
+
+async def send_email_async(to_email: str, subject: str, body: str):
+    def _send():
+        if not settings.SMTP_HOST or not settings.SMTP_USER or not settings.SMTP_PASSWORD:
+            raise ValueError("SMTP credentials not configured in environment.")
+            
+        msg = MIMEMultipart()
+        msg['From'] = settings.FROM_EMAIL
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
+        
+        server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT)
+        server.starttls()
+        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        
+    await asyncio.to_thread(_send)
 
 router = APIRouter()
 
@@ -205,7 +228,31 @@ async def apply(
     Submit a new candidate application.
     This is a public endpoint used by candidates to apply for a position.
     """
-    from datetime import date as date_type
+    from datetime import date as date_type, datetime, timedelta, timezone
+
+    def normalize_email(e_val: str) -> str:
+        return e_val.strip().lower()
+
+    def normalize_phone(p_val: str) -> str:
+        digits = "".join(c for c in p_val if c.isdigit())
+        return digits[-10:] if len(digits) >= 10 else digits
+
+    email_norm = normalize_email(email)
+    phone_norm = normalize_phone(phone)
+    one_month_ago = datetime.now(timezone.utc) - timedelta(days=30)
+
+    # Fetch candidates applied in the last 1 month
+    recent_candidates = db.query(models.Candidate).filter(
+        models.Candidate.applied_at >= one_month_ago
+    ).all()
+
+    for cand in recent_candidates:
+        if (cand.email and normalize_email(cand.email) == email_norm) or \
+           (cand.phone and normalize_phone(cand.phone) == phone_norm):
+            raise HTTPException(
+                status_code=400,
+                detail="We already have your application with us. Please try again after 1 month."
+            )
 
     # Handle file uploads if provided
     photo_url = None
@@ -409,3 +456,52 @@ def delete_candidate(
     db.delete(candidate)
     db.commit()
     return {"detail": "Candidate deleted"}
+
+@router.post("/{candidate_id}/send-email")
+async def send_email_to_candidate(
+    candidate_id: int,
+    request: schemas.EmailSendRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+):
+    """
+    Send an email to a candidate.
+    """
+    candidate = db.query(models.Candidate).filter(models.Candidate.id == candidate_id).first()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+        
+    try:
+        await send_email_async(candidate.email, request.subject, request.body)
+        email_status = "sent successfully"
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"SMTP sending failed: {str(e)}. Falling back to console printing.")
+        
+        # Ensure characters are safe for Windows console CP1252 encoding to avoid UnicodeEncodeError
+        safe_subject = request.subject.encode('ascii', errors='backslashreplace').decode('ascii')
+        safe_body = request.body.encode('ascii', errors='backslashreplace').decode('ascii')
+        
+        print("\n" + "="*80)
+        print(f"[FALLBACK EMAIL LOG - SMTP FAILED]")
+        print(f"To: {candidate.email}")
+        print(f"Subject: {safe_subject}")
+        print(f"Body:\n{safe_body}")
+        print("="*80 + "\n")
+        email_status = "logged to server console (SMTP authentication/sending failed)"
+        
+    if request.interview_date is not None:
+        candidate.interview_date = request.interview_date
+    if request.meeting_link is not None:
+        candidate.meeting_link = request.meeting_link
+        
+    if email_status == "sent successfully":
+        if request.template_type == "HR Round":
+            candidate.status = models.CandidateStatus.EMAIL_SENT_HR
+        elif request.template_type == "Tech Round":
+            candidate.status = models.CandidateStatus.EMAIL_SENT_TECH
+
+    db.commit()
+    db.refresh(candidate)
+    return {"detail": f"Email {email_status}"}
+

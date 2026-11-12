@@ -27,6 +27,28 @@ const emptyEducation = { type: 'College/University', degree: '', institution: ''
 const emptyWork = { company_name: '', position: '', from_date: '', to_date: '', responsibilities: '' };
 const emptyRef = { name: '', designation: '', company: '', email: '', phone: '' };
 
+const base64ToBlob = (base64Data, contentType) => {
+  try {
+    const sliceSize = 512;
+    const byteCharacters = atob(base64Data.split(',')[1]);
+    const byteArrays = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      const slice = byteCharacters.slice(offset, offset + sliceSize);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+    return new Blob(byteArrays, { type: contentType });
+  } catch (e) {
+    console.error("Base64 conversion failed", e);
+    return null;
+  }
+};
+
 export default function ApplicationForm() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -35,10 +57,17 @@ export default function ApplicationForm() {
   const [loading, setLoading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [cvName, setCvName] = useState('');
-  const [cvPreview, setCvPreview] = useState(null);
+  const [cvUrl, setCvUrl] = useState(null);
   const [ageWarning, setAgeWarning] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [refPhoneErrors, setRefPhoneErrors] = useState({});
+  const [fullNameError, setFullNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [expYearsError, setExpYearsError] = useState('');
+  const [expMonthsError, setExpMonthsError] = useState('');
+  const [currCtcError, setCurrCtcError] = useState('');
+  const [expCtcError, setExpCtcError] = useState('');
+  const [noticeError, setNoticeError] = useState('');
 
   const [form, setForm] = useState({
     full_name: '', email: '', phone: '', date_of_birth: '', gender: '', marital_status: '', nationality: '',
@@ -79,7 +108,10 @@ export default function ApplicationForm() {
           }
           if (data.references) setReferences(data.references);
           if (data.photo_url) setPhotoPreview(`${API_BASE}${data.photo_url}`);
-          if (data.cv_url) setCvName('Current CV');
+          if (data.cv_url) {
+            setCvName('Current CV');
+            setCvUrl(`${API_BASE}${data.cv_url}`);
+          }
 
           setForm({
             full_name: data.full_name || '',
@@ -115,13 +147,42 @@ export default function ApplicationForm() {
         })
         .catch(err => {
           console.error(err);
-          toast.error("Failed to load candidate data");
+          toast.error(err.isNetworkError ? err.message : "Failed to load candidate data");
           setLoading(false);
         });
     }
   }, [id, isEditMode]);
 
+  // Clean up Object URLs when they change or when the component unmounts to prevent memory leaks
+  useEffect(() => {
+    const activeUrl = cvUrl;
+    return () => {
+      if (activeUrl && activeUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(activeUrl);
+      }
+    };
+  }, [cvUrl]);
+
   const updateForm = (key, val) => {
+    if (key === 'full_name') {
+      if (val && val.trim().length < 3) {
+        setFullNameError('Name must be at least 3 characters long');
+      } else if (val && /[^a-zA-Z\s.]/.test(val)) {
+        setFullNameError('Name should only contain letters, spaces, or dots');
+      } else {
+        setFullNameError('');
+      }
+    }
+
+    if (key === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (val && !emailRegex.test(val)) {
+        setEmailError('Please enter a valid email address');
+      } else {
+        setEmailError('');
+      }
+    }
+
     if (key === 'date_of_birth') {
       const age = calculateAge(val);
       if (val && age < 18) {
@@ -139,6 +200,36 @@ export default function ApplicationForm() {
       } else {
         setPhoneError('');
       }
+    }
+
+    if (key === 'experience_years') {
+      if (val && isNaN(val)) setExpYearsError('Experience must be a valid number');
+      else if (val < 0) setExpYearsError('Experience cannot be negative');
+      else setExpYearsError('');
+    }
+
+    if (key === 'experience_months') {
+      if (val && isNaN(val)) setExpMonthsError('Months must be a valid number');
+      else if (val < 0 || val > 11) setExpMonthsError('Months must be between 0 and 11');
+      else setExpMonthsError('');
+    }
+
+    if (key === 'current_ctc') {
+      if (val && isNaN(val)) setCurrCtcError('CTC must be a valid number (e.g. 5.5)');
+      else if (val && Number(val) < 0) setCurrCtcError('CTC must be a positive number');
+      else setCurrCtcError('');
+    }
+
+    if (key === 'expected_ctc') {
+      if (val && isNaN(val)) setExpCtcError('Expected CTC must be a valid number (e.g. 8.0)');
+      else if (val && Number(val) < 0) setExpCtcError('Expected CTC must be a positive number');
+      else setExpCtcError('');
+    }
+
+    if (key === 'notice_period') {
+      if (val && val !== 'Immediate' && isNaN(val)) setNoticeError('Notice period must be a valid number of days');
+      else if (val && val !== 'Immediate' && Number(val) < 0) setNoticeError('Notice period must be a positive number of days');
+      else setNoticeError('');
     }
 
     setForm((p) => {
@@ -168,21 +259,49 @@ export default function ApplicationForm() {
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setPhoto(file);
+      if (file.size > 1.5 * 1024 * 1024) {
+        toast.error('Photo size must be less than 1.5MB');
+        e.target.value = '';
+        return;
+      }
       setPhotoPreview(URL.createObjectURL(file));
+      setLoading(true);
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPhoto({ base64: event.target.result, name: file.name, type: file.type });
+        setLoading(false);
+      };
+      reader.onerror = () => {
+        toast.error('Failed to read photo file');
+        setLoading(false);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleCvChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setCv(file);
-      setCvName(file.name);
-      if (file.type === 'application/pdf') {
-        setCvPreview(URL.createObjectURL(file));
-      } else {
-        setCvPreview(null);
+      if (file.size > 1.5 * 1024 * 1024) {
+        toast.error('CV/Resume size must be less than 1.5MB');
+        e.target.value = '';
+        return;
       }
+      setCvName(file.name);
+      setCvUrl(URL.createObjectURL(file));
+      setLoading(true);
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCv({ base64: event.target.result, name: file.name, type: file.type });
+        setLoading(false);
+      };
+      reader.onerror = () => {
+        toast.error('Failed to read CV/Resume file');
+        setLoading(false);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -202,7 +321,7 @@ export default function ApplicationForm() {
     e.stopPropagation();
     setCv(null);
     setCvName('');
-    setCvPreview(null);
+    setCvUrl(null);
     if (cvRef.current) cvRef.current.value = '';
   };
 
@@ -218,11 +337,23 @@ export default function ApplicationForm() {
     setLoading(true);
 
     try {
+      if (fullNameError) throw new Error(fullNameError);
+      if (emailError) throw new Error(emailError);
+      if (phoneError) throw new Error(phoneError);
+      if (ageWarning) throw new Error(ageWarning);
+      if (expYearsError) throw new Error(expYearsError);
+      if (expMonthsError) throw new Error(expMonthsError);
+      if (currCtcError) throw new Error(currCtcError);
+      if (expCtcError) throw new Error(expCtcError);
+      if (noticeError) throw new Error(noticeError);
+
       const fd = new FormData();
 
       // Basic fields
       Object.entries(form).forEach(([k, v]) => {
-        if (v !== '' && v !== null && v !== undefined) fd.append(k, v);
+        if (k !== 'skills' && k !== 'languages') {
+          if (v !== '' && v !== null && v !== undefined) fd.append(k, v);
+        }
       });
 
       // JSON fields (Filter out empty items to keep database clean)
@@ -235,8 +366,8 @@ export default function ApplicationForm() {
       fd.append('references', JSON.stringify(cleanRefs));
 
       // Skills and languages as JSON arrays
-      if (form.skills) fd.set('skills', JSON.stringify(form.skills.split(',').map(s => s.trim()).filter(Boolean)));
-      if (form.languages) fd.set('languages', JSON.stringify(form.languages.split(',').map(s => s.trim()).filter(Boolean)));
+      if (form.skills) fd.append('skills', JSON.stringify(form.skills.split(',').map(s => s.trim()).filter(Boolean)));
+      if (form.languages) fd.append('languages', JSON.stringify(form.languages.split(',').map(s => s.trim()).filter(Boolean)));
 
       // Files
       if (!isEditMode && !photo) throw new Error('Please upload your photo (required).');
@@ -247,17 +378,67 @@ export default function ApplicationForm() {
         if (!edu.degree || !edu.institution || !edu.graduation_year) {
           throw new Error('Please complete all required fields in Education.');
         }
+        const year = edu.graduation_year.toString().trim();
+        if (isNaN(year) || year.length !== 4) {
+          throw new Error('Graduation year must be a valid 4-digit number (e.g. 2024).');
+        }
+        const currentYear = new Date().getFullYear();
+        if (parseInt(year) < 1950 || parseInt(year) > currentYear + 10) {
+          throw new Error(`Graduation year must be a realistic year between 1950 and ${currentYear + 10}.`);
+        }
+        if (edu.percentage) {
+          const pctVal = edu.percentage.replace(/%/g, '').trim();
+          if (isNaN(pctVal) || parseFloat(pctVal) < 0) {
+            throw new Error('Education Marks/Grade/CGPA must be a positive number or percentage.');
+          }
+        }
       }
       if (!isFresher) {
         for (const w of workExperience) {
           if (!w.company_name || !w.position || !w.from_date || !w.to_date) {
             throw new Error('Please complete all required fields in Work Experience.');
           }
+          if (new Date(w.from_date) > new Date(w.to_date)) {
+            throw new Error(`In Work Experience at "${w.company_name}", the Start Date cannot be after the End Date.`);
+          }
+          if (new Date(w.from_date) > new Date()) {
+            throw new Error(`In Work Experience at "${w.company_name}", the Start Date cannot be in the future.`);
+          }
         }
       }
 
-      if (photo) fd.append('photo', photo);
-      if (cv) fd.append('cv', cv);
+      for (const ref of cleanRefs) {
+        if (ref.phone && (isNaN(ref.phone) || ref.phone.length !== 10)) {
+          throw new Error(`Reference "${ref.name || 'Reference'}" phone number must be exactly 10 digits.`);
+        }
+        if (ref.email) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(ref.email)) {
+            throw new Error(`Reference "${ref.name || 'Reference'}" has an invalid email address.`);
+          }
+        }
+      }
+
+      if (form.earliest_join_date) {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        if (new Date(form.earliest_join_date) < today) {
+          throw new Error('Earliest join date cannot be in the past.');
+        }
+      }
+
+      if (photo && photo.base64) {
+        const blob = base64ToBlob(photo.base64, photo.type);
+        if (blob) {
+          fd.append('photo', blob, photo.name);
+        }
+      }
+      if (cv && cv.base64) {
+        const blob = base64ToBlob(cv.base64, cv.type);
+        if (blob) {
+          fd.append('cv', blob, cv.name);
+        }
+      }
 
       if (isEditMode) {
         await api.put(`/candidates/${id}`, fd);
@@ -271,7 +452,7 @@ export default function ApplicationForm() {
       setIsSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      toast.error(err.message || 'Failed to submit application');
+      toast.error(err.isNetworkError ? err.message : (err.message || 'Failed to submit application'));
     } finally {
       setLoading(false);
     }
@@ -306,16 +487,18 @@ export default function ApplicationForm() {
       <header className="app-form-header">
         <div className="app-form-header-content section-header-row">
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }} onClick={() => navigate(isEditMode ? `/candidates/${id}` : '/home')}>
-              <ArrowLeft size={24} />
-            </div>
+            <button className="icon-btn form-back-btn" onClick={() => navigate(isEditMode ? `/candidates/${id}` : '/home')}>
+              <ArrowLeft size={20} />
+            </button>
             <div>
               <h1 style={{ margin: 0, fontSize: '1.25rem' }}>{isEditMode ? 'Edit Candidate' : 'Pre Interview Application'}</h1>
               <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>{isEditMode ? (form.full_name || 'Candidate') : 'Eulogik'}</p>
             </div>
-            <img src="/eulogik-logo.png" alt="Eulogik Logo" className="brand-logo" />
           </div>
-          <ThemeToggle />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <img src="/eulogik-logo.png" alt="Eulogik Logo" className="brand-logo" />
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -384,26 +567,49 @@ export default function ApplicationForm() {
                 <input ref={photoRef} type="file" accept="image/*" onChange={handlePhotoChange} hidden />
               </div>
 
-              <div className="upload-cv-area" onClick={() => cvRef.current.click()} style={{ position: 'relative', minHeight: '140px', padding: cvPreview ? '0' : '20px' }}>
+              <div className="upload-cv-area" onClick={cvName ? null : () => cvRef.current.click()} style={{ position: 'relative', height: '140px', padding: cvName ? '4px' : '20px', boxSizing: 'border-box', overflow: 'hidden', cursor: cvName ? 'default' : 'pointer' }}>
                 {cvName && (
-                  <button type="button" onClick={removeCv} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>
-                    <X size={14} />
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        cvRef.current.click();
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: '6px',
+                        left: '6px',
+                        background: 'var(--color-primary)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '2px 8px',
+                        fontSize: '0.7rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        zIndex: 20
+                      }}
+                    >
+                      Change
+                    </button>
+                    <button type="button" onClick={removeCv} style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 20 }}>
+                      <X size={12} />
+                    </button>
+                  </>
                 )}
-                {cvPreview ? (
-                  <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                    <iframe src={`${cvPreview}#toolbar=0&navpanes=0&scrollbar=0`} width="100%" height="180px" title="CV Preview" style={{ border: 'none', pointerEvents: 'none', overflow: 'hidden' }} scrolling="no" />
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 8px', fontSize: '0.7rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cvName}</span>
-                      <span style={{ opacity: 0.8 }}>Change</span>
+                {cvName ? (
+                  cvName.toLowerCase().endsWith('.pdf') || (cvUrl && cvUrl.includes('.pdf')) || (cv && cv.type === 'application/pdf') ? (
+                    <div style={{ width: '100%', height: '100%' }}>
+                      <iframe src={cvUrl} title="CV Preview" className="cv-preview-iframe" style={{ width: '100%', height: '100%', border: 'none', borderRadius: '4px', background: 'white' }} />
                     </div>
-                  </div>
-                ) : cvName ? (
-                  <div className="upload-placeholder" style={{ padding: '20px' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📄</div>
-                    <span style={{ fontWeight: 600, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cvName}</span>
-                    <small style={{ color: 'var(--color-text-muted)' }}>Click to change</small>
-                  </div>
+                  ) : (
+                    <div className="upload-placeholder" style={{ padding: '10px', textAlign: 'center', cursor: 'pointer' }} onClick={() => cvRef.current.click()}>
+                      <div style={{ fontSize: '2rem', marginBottom: '4px' }}>📄</div>
+                      <span style={{ fontWeight: 600, fontSize: '0.8rem', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{cvName}</span>
+                      <small style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem' }}>Word doc (No preview). Click to change</small>
+                    </div>
+                  )
                 ) : (
                   <>
                     <Upload size={24} />
@@ -424,10 +630,12 @@ export default function ApplicationForm() {
               <div className="form-group">
                 <label className="form-label">Full Name <span style={{ color: 'var(--color-error)' }}>*</span></label>
                 <input className="form-input" placeholder="e.g. John Doe" value={form.full_name} onChange={(e) => updateForm('full_name', e.target.value)} required />
+                {fullNameError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{fullNameError}</p>}
               </div>
               <div className="form-group">
                 <label className="form-label">Email <span style={{ color: 'var(--color-error)' }}>*</span></label>
                 <input className="form-input" type="email" placeholder="john.doe@example.com" value={form.email} onChange={(e) => updateForm('email', e.target.value)} required />
+                {emailError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{emailError}</p>}
               </div>
             </div>
             <div className="form-row">
@@ -555,7 +763,7 @@ export default function ApplicationForm() {
                 required
               >
                 <option value="">Select position</option>
-                {['Software Engineer', 'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'UI/UX Designer', 'QA Engineer', 'DevOps Engineer', 'Product Manager', 'Marketing Intern', 'HR', 'HR Intern', 'Python Developer', 'SDE Intern'].map(p => <option key={p} value={p}>{p}</option>)}
+                {['Software Engineer', 'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'UI/UX Designer', 'QA Engineer', 'DevOps Engineer', 'AI/ML Engineer', 'AI/ML Intern', 'Product Manager', 'Marketing Intern', 'HR Executive', 'HR Intern', 'Python Developer', 'SDE Intern', 'Social Media and Marketing', 'Front Desk Office'].map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
             <div style={{ margin: '20px 0 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -592,20 +800,24 @@ export default function ApplicationForm() {
                   <div className="form-group">
                     <label className="form-label">Experience (Years)</label>
                     <input className="form-input" type="number" placeholder="e.g. 2" min="0" value={form.experience_years} onChange={(e) => updateForm('experience_years', e.target.value)} />
+                    {expYearsError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{expYearsError}</p>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Experience (Months)</label>
                     <input className="form-input" type="number" placeholder="e.g. 6" min="0" max="11" value={form.experience_months} onChange={(e) => updateForm('experience_months', e.target.value)} />
+                    {expMonthsError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{expMonthsError}</p>}
                   </div>
                 </div>
                 <div className="form-row" style={{ marginTop: '16px' }}>
                   <div className="form-group">
                     <label className="form-label">Current CTC (in LPA)</label>
                     <input className="form-input" placeholder="e.g. 5.5" value={form.current_ctc} onChange={(e) => updateForm('current_ctc', e.target.value)} />
+                    {currCtcError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{currCtcError}</p>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Expected CTC (in LPA)</label>
                     <input className="form-input" placeholder="e.g. 8.0" value={form.expected_ctc} onChange={(e) => updateForm('expected_ctc', e.target.value)} />
+                    {expCtcError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{expCtcError}</p>}
                   </div>
                 </div>
               </>
@@ -615,6 +827,7 @@ export default function ApplicationForm() {
               <div className="form-group" style={{ marginTop: '16px' }}>
                 <label className="form-label">Expected CTC (in LPA)</label>
                 <input className="form-input" placeholder="e.g. 8.0" value={form.expected_ctc} onChange={(e) => updateForm('expected_ctc', e.target.value)} />
+                {expCtcError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{expCtcError}</p>}
               </div>
             )}
 
@@ -622,6 +835,7 @@ export default function ApplicationForm() {
               <div className="form-group" style={{ marginTop: '16px' }}>
                 <label className="form-label">Notice Period (Days)</label>
                 <input className="form-input" placeholder="e.g. 30" value={form.notice_period} onChange={(e) => updateForm('notice_period', e.target.value)} />
+                {noticeError && <p style={{ color: 'var(--color-error)', fontSize: '0.8rem', marginTop: '4px' }}>{noticeError}</p>}
               </div>
             )}
           </section>

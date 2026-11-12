@@ -20,13 +20,15 @@ class UserRole(str, enum.Enum):
 class CandidateStatus(str, enum.Enum):
     """Represents the current stage of a candidate in the recruitment pipeline."""
     APPLIED = "Applied"
-    SCREENING = "Screening"
-    INTERVIEW = "Interview"
+    EMAIL_SENT_HR = "Email sent for HR round"
+    EMAIL_SENT_TECH = "Email sent for Tech round"
     HR_ROUND = "HR Round"
+    NOT_APPEARED = "Candidate not appeared"
     ON_HOLD = "On Hold"
     OFFERED = "Offered"
     HIRED = "Hired"
     REJECTED = "Rejected"
+    CANDIDATE_REJECTED = "Candidate rejected the offer"
 
 
 class AssessmentType(str, enum.Enum):
@@ -114,6 +116,8 @@ class Candidate(Base):
     status = Column(SqlEnum(CandidateStatus, values_callable=lambda x: [e.value for e in x]), default=CandidateStatus.APPLIED)
     applied_at = Column(DateTime(timezone=True), server_default=func.now())
     interviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    interview_date = Column(DateTime(timezone=True), nullable=True)
+    meeting_link = Column(String, nullable=True)
 
     # Relationships
     interviewer = relationship("User", foreign_keys=[interviewer_id])
@@ -146,3 +150,61 @@ class Assessment(Base):
     # Database Relationships
     candidate = relationship("Candidate", back_populates="assessments")
     interviewer = relationship("User", back_populates="assessments")
+
+
+class Test(Base):
+    """
+    Represents an MCQ test uploaded by the admin.
+    """
+    __tablename__ = "tests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    duration = Column(Integer, nullable=True, default=30)  # duration in minutes
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    questions = relationship("Question", back_populates="test", cascade="all, delete-orphan")
+    assignments = relationship("CandidateTest", back_populates="test", cascade="all, delete-orphan")
+
+
+class Question(Base):
+    """
+    Represents a single question (MCQ or Coding) in a test.
+    """
+    __tablename__ = "questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    test_id = Column(Integer, ForeignKey("tests.id", ondelete="CASCADE"), nullable=False)
+    question_text = Column(Text, nullable=False)
+    question_type = Column(String, nullable=False, default="MCQ")  # "MCQ" or "CODING"
+    option_a = Column(String, nullable=True)
+    option_b = Column(String, nullable=True)
+    option_c = Column(String, nullable=True)
+    option_d = Column(String, nullable=True)
+    correct_option = Column(String, nullable=True)  # For MCQ: "A", "B", "C", or "D"
+
+    # Relationships
+    test = relationship("Test", back_populates="questions")
+
+
+class CandidateTest(Base):
+    """
+    Represents a test assigned to a candidate, tracking status, answers and score.
+    """
+    __tablename__ = "candidate_tests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    candidate_id = Column(Integer, ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False)
+    test_id = Column(Integer, ForeignKey("tests.id", ondelete="CASCADE"), nullable=False)
+    assigned_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    score = Column(Integer, nullable=True)
+    total_questions = Column(Integer, nullable=True)
+    answers = Column(JSON, nullable=True)  # Format: {"question_id": "A", ...}
+
+    # Relationships
+    candidate = relationship("Candidate")
+    test = relationship("Test", back_populates="assignments")
+

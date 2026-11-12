@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.db.init_db import init_db
-from app.api.v1 import auth, candidates, assessments, users
+from app.api.v1 import auth, candidates, assessments, users, tests
 
 # Setup logging to help with debugging
 logger = logging.getLogger(__name__)
@@ -28,8 +28,8 @@ api = FastAPI(
 # Allows the React frontend (running on another port) to talk to this API
 api.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
-    allow_origin_regex=settings.BACKEND_CORS_ORIGIN_REGEX,
+    allow_origins=["*"] if os.getenv("ENV") == "production" else settings.BACKEND_CORS_ORIGINS,
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,6 +54,7 @@ api.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 api.include_router(candidates.router, prefix="/api/v1/candidates", tags=["Candidates"])
 api.include_router(assessments.router, prefix="/api/v1/assessments", tags=["Assessments"])
 api.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
+api.include_router(tests.router, prefix="/api/v1/tests", tags=["Tests"])
 
 # ── Static Files ──────────────────────────────────────────────────────
 # Serve files like uploaded CVs so they can be viewed in the browser

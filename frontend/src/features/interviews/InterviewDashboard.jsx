@@ -16,12 +16,14 @@ import '../candidates/CandidateDashboard.css';
 import ThemeToggle from '@/components/ThemeToggle';
 import ConfirmModal from '@/components/ConfirmModal';
 
-const STATUS_OPTIONS = ['All Status', 'Interview', 'HR Round', 'Screening', 'Applied', 'On Hold', 'Hired', 'Rejected'];
+const STATUS_OPTIONS = ['All Status', 'Email sent for HR round', 'HR Round', 'Candidate not appeared', 'Applied', 'On Hold', 'Hired', 'Rejected', 'Candidate rejected the offer'];
 
 function getStatusBadgeClass(status) {
   const map = {
-    Applied: 'badge-applied', Screening: 'badge-screening', Interview: 'badge-interview',
-    'HR Round': 'badge-hr-round', 'On Hold': 'badge-on-hold', Offered: 'badge-offered', Hired: 'badge-hired', Rejected: 'badge-rejected',
+    Applied: 'badge-applied', 'Email sent for HR round': 'badge-email-sent-hr',
+    'HR Round': 'badge-hr-round', 'Candidate not appeared': 'badge-not-appeared',
+    'On Hold': 'badge-on-hold', Offered: 'badge-offered', Hired: 'badge-hired', Rejected: 'badge-rejected',
+    'Candidate rejected the offer': 'badge-candidate-rejected',
   };
   return map[status] || 'badge-applied';
 }
@@ -134,7 +136,7 @@ export default function InterviewDashboard() {
         return null;
       });
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to load interviewers');
+      toast.error(err.isNetworkError ? err.message : (err.response?.data?.detail || 'Failed to load interviewers'));
     } finally {
       setLoadingInterviewers(false);
     }
@@ -158,7 +160,7 @@ export default function InterviewDashboard() {
       setSelectedInterviewerId(null);
       toast.success('Interviewer account created successfully.');
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Could not create interviewer');
+      toast.error(err.isNetworkError ? err.message : (err.response?.data?.detail || 'Could not create interviewer'));
     } finally {
       setCreatingInterviewer(false);
     }
@@ -179,7 +181,7 @@ export default function InterviewDashboard() {
       setShowInterviewerDetailsModal(false);
       setPendingDeleteInterviewer(null);
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Could not delete interviewer');
+      toast.error(err.isNetworkError ? err.message : (err.response?.data?.detail || 'Could not delete interviewer'));
     } finally {
       setDeletingInterviewer(false);
     }
@@ -195,7 +197,7 @@ export default function InterviewDashboard() {
       fetchCandidates();
       setCandidateToDelete(null);
     } catch (err) {
-      toast.error('Error deleting candidate');
+      toast.error(err.isNetworkError ? err.message : 'Error deleting candidate');
     }
   };
 
@@ -332,7 +334,7 @@ export default function InterviewDashboard() {
             <div
               key={c.id}
               className="candidate-card card card-interactive"
-              onClick={() => window.open(`/candidates/${c.id}`, '_blank')}
+              onClick={() => navigate(`/candidates/${c.id}`, { state: { from: '/interview' } })}
             >
               <div className="candidate-card-top">
                 <div className="candidate-info">
