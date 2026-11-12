@@ -153,6 +153,16 @@ export default function ApplicationForm() {
     }
   }, [id, isEditMode]);
 
+  // Clean up Object URLs when they change or when the component unmounts to prevent memory leaks
+  useEffect(() => {
+    const activeUrl = cvUrl;
+    return () => {
+      if (activeUrl && activeUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(activeUrl);
+      }
+    };
+  }, [cvUrl]);
+
   const updateForm = (key, val) => {
     if (key === 'full_name') {
       if (val && val.trim().length < 3) {
